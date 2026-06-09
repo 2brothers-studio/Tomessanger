@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessanger V2</title>
+    <title>Tomessanger V3 (Search & Gemini)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,14 +13,16 @@
         .tg-chat-bg { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.95; }
         .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; }
         .other-msg { background-color: #182533; align-self: flex-start; border-radius: 12px 12px 12px 0px; }
+        .ai-msg { background-color: #1f3c58; align-self: flex-start; border-radius: 12px 12px 12px 0px; border-left: 3px solid #40a7e3; }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center overflow-hidden">
 
+    <!-- 1. GİRİŞ / QEYDİYYAT EKRANI -->
     <div id="auth-container" class="w-full max-w-md p-8 rounded-lg tg-bg shadow-lg z-10">
         <h2 id="auth-title" class="text-2xl font-bold text-center mb-6">Tomessenger-ə Giriş</h2>
         <div class="space-y-4">
-            <input type="text" id="auth-name" placeholder="Adınız (Məs: Əli)" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none text-white hidden">
+            <input type="text" id="auth-name" placeholder="Adınız (Məs: Murad)" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none text-white hidden">
             <input type="text" id="auth-avatar" placeholder="Profil şəkil linki (URL)" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none text-white hidden">
             
             <input type="email" id="auth-email" placeholder="E-poçt ünvanı" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none text-white">
@@ -34,9 +36,12 @@
         </div>
     </div>
 
+    <!-- 2. ƏSAS TELEGRAM INTERFEYSİ -->
     <div id="app-container" class="w-full h-screen flex hidden">
         
+        <!-- Sol Panel -->
         <div class="w-1/3 tg-bg border-r border-[#101921] flex flex-col h-full">
+            <!-- Profil Başlığı -->
             <div class="p-4 flex justify-between items-center border-b border-[#101921]">
                 <div class="flex items-center space-x-3">
                     <img id="my-avatar-img" src="" class="w-10 h-10 rounded-full object-cover hidden">
@@ -53,16 +58,40 @@
                 </div>
             </div>
             
-            <div class="flex-1 overflow-y-auto" id="chats-list">
-                <p class="text-gray-500 text-xs p-4 uppercase tracking-wider">Söhbətlər</p>
+            <!-- YENİ: Axtarış Çubuğu (Search Bar) -->
+            <div class="p-3 border-b border-[#101921]">
+                <div class="relative flex items-center bg-[#24303f] rounded-lg px-3 py-2">
+                    <i class="fas fa-search text-gray-400 mr-2 text-sm"></i>
+                    <input type="text" id="search-input" oninput="filterChats()" placeholder="Dostunun adını axtar..." class="bg-transparent text-sm text-white w-full focus:outline-none placeholder-gray-500">
                 </div>
+            </div>
+            
+            <!-- Çat Siyahısı -->
+            <div class="flex-1 overflow-y-auto" id="chats-list">
+                <!-- Xüsusi Sabit Gemini Düyməsi -->
+                <div onclick="startGeminiChat()" class="p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer transition border-b border-[#101921] bg-[#1a2c3d]">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-robot text-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-[#40a7e3]">Gemini AI Bot</h4>
+                        <p class="text-xs text-gray-400 truncate">Süni İntellekt köməkçisi</p>
+                    </div>
+                </div>
+
+                <p class="text-gray-500 text-[11px] p-3 uppercase font-bold tracking-wider" id="section-title">Söhbətlər</p>
+                <div id="dynamic-chats"><!-- İstifadəçilər və Qruplar bura gələcək --></div>
+            </div>
         </div>
 
+        <!-- Sağ Panel -->
         <div class="flex-1 flex flex-col bg-[#0e1621] relative tg-chat-bg">
+            <!-- Boş Ekran -->
             <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0e1621] z-20">
-                <p class="bg-[#182533] px-4 py-2 rounded-full text-sm text-gray-400">Yazışmaq üçün sol paneldən birini seçin</p>
+                <p class="bg-[#182533] px-4 py-2 rounded-full text-sm text-gray-400">Yazışmaq üçün sol paneldən bir dostunu seç</p>
             </div>
 
+            <!-- Çat Başlığı -->
             <div class="p-4 tg-bg flex items-center border-b border-[#101921] z-10">
                 <img id="active-chat-avatar" src="" class="w-10 h-10 rounded-full object-cover mr-3 hidden">
                 <div id="active-chat-avatar-placeholder" class="w-10 h-10 bg-[#40a7e3] rounded-full flex items-center justify-center font-bold mr-3">?</div>
@@ -72,10 +101,12 @@
                 </div>
             </div>
 
+            <!-- Mesajlar Sahəsi -->
             <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
 
+            <!-- Giriş Sahəsi -->
             <form id="message-form" onsubmit="sendMessage(event)" class="p-4 tg-bg flex items-center space-x-3 z-10">
-                <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white placeholder-gray-500 focus:outline-none">
+                <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white focus:outline-none">
                 <button type="submit" class="w-12 h-12 bg-[#2b5278] hover:bg-[#2481cc] rounded-full flex items-center justify-center text-white transition">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -83,11 +114,11 @@
         </div>
     </div>
 
+    <!-- Qrup Modalı -->
     <div id="group-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-[#17212b] p-6 rounded-lg w-full max-w-sm">
             <h3 class="text-lg font-bold mb-4">Yeni Qrup Yarat</h3>
             <input type="text" id="group-name-input" placeholder="Qrup adı" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none text-white mb-4">
-            <p class="text-xs text-gray-400 mb-2">Qrupa əlavə etmək istədiyiniz şəxsləri seçin:</p>
             <div id="group-users-list" class="space-y-2 max-h-40 overflow-y-auto mb-4"></div>
             <div class="flex justify-end space-x-2">
                 <button onclick="closeGroupModal()" class="px-4 py-2 bg-gray-600 rounded text-sm">Ləğv et</button>
@@ -96,10 +127,14 @@
         </div>
     </div>
 
+    <!-- FIREBASE & SCRIPT LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, query, orderBy, onSnapshot, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // MƏSLƏHƏT: Buraya öz pulsuz Gemini API açarını qoya bilərsən. Əgər qoymasan süni intellekt simulyasiya (avtomatik hazır) cavablar verəcək.
+        const GEMINI_API_KEY = "YURT_GEMINI_API_KEY_HERE"; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyBphHHmIBl0vNONV7XYIrCcSRM0uBTIors",
@@ -118,11 +153,11 @@
         let currentUser = null;
         let userData = null;
         let activeChatId = null;
-        let activeChatType = null; // 'private' və ya 'group'
+        let activeChatType = null; // 'private', 'group', 'gemini'
         let unsubscribeMessages = null;
         let selectedGroupUsers = [];
+        let allUsersCached = [];
 
-        // Giriş/Qeydiyyat keçidi
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Hesab Yarat" : "Tomessenger-ə Giriş";
@@ -130,54 +165,40 @@
             document.getElementById('auth-avatar').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('btn-action').innerText = isSignUpMode ? "Qeydiyyatdan Keç" : "Giriş Et";
             document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Artıq hesabınız var?" : "Hesabınız yoxdur?";
-            document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
         }
 
-        // Giriş və Qeydiyyat Əməliyyatları
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
             const name = document.getElementById('auth-name').value.trim();
             const avatar = document.getElementById('auth-avatar').value.trim();
 
-            if(!email || !password) return alert("E-poçt və şifrə mütləqdir!");
+            if(!email || !password) return alert("Xanaları doldurun!");
 
             try {
                 if (isSignUpMode) {
-                    if(!name) return alert("Zəhmət olmasa adınızı daxil edin!");
+                    if(!name) return alert("Ad yazın!");
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-                    
-                    // İstifadəçi məlumatlarını Firestore-da 'users' kolleksiyasında saxlayırıq
-                    await setDoc(doc(db, "users", user.uid), {
-                        uid: user.uid,
-                        name: name,
-                        email: email,
-                        avatar: avatar || ""
+                    await setDoc(doc(db, "users", userCredential.user.uid), {
+                        uid: userCredential.user.uid, name: name, email: email, avatar: avatar || ""
                     });
-                    alert("Hesab uğurla yaradıldı!");
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
-            } catch (error) {
-                alert("Xəta: " + error.message);
-            }
+            } catch (error) { alert("Xəta: " + error.message); }
         }
 
         window.logout = () => signOut(auth);
 
-        // İstifadəçi daxil olduqda
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 userData = userDoc.data();
-
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
-
-                // Öz profilini yüklə
                 document.getElementById('my-name').innerText = userData.name;
+                
                 if(userData.avatar) {
                     document.getElementById('my-avatar-img').src = userData.avatar;
                     document.getElementById('my-avatar-img').classList.remove('hidden');
@@ -185,7 +206,6 @@
                 } else {
                     document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
                 }
-
                 loadChatsList();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
@@ -193,66 +213,51 @@
             }
         });
 
-        // Sol paneldəki istifadəçiləri və qrupları canlı yükləyən funksiya
+        // Çat siyahısını yükləmək və Axtarış bazası yaratmaq
         function loadChatsList() {
-            // 1. Digər bütün istifadəçiləri gətir (Şəxsi Çat üçün)
             onSnapshot(collection(db, "users"), (snapshot) => {
-                const chatsList = document.getElementById('chats-list');
-                // Əvvəlcə siyahını təmizləyək amma qruplar qalsın deyə id-lərlə idarə edəcəyik
-                const existingPrivates = document.querySelectorAll('.private-chat-item');
-                existingPrivates.forEach(el => el.remove());
-
-                snapshot.forEach((doc) => {
-                    const user = doc.data();
-                    if(user.uid === currentUser.uid) return; // Özünü siyahıda göstərmə
-
-                    const div = document.createElement('div');
-                    div.className = "private-chat-item p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer transition border-b border-[#101921]";
-                    div.onclick = () => startPrivateChat(user);
-
-                    div.innerHTML = `
-                        ${user.avatar ? `<img src="${user.avatar}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold">${user.name.charAt(0).toUpperCase()}</div>`}
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-sm text-white">${user.name}</h4>
-                            <p class="text-xs text-gray-400 truncate">Şəxsi söhbət</p>
-                        </div>
-                    `;
-                    chatsList.appendChild(div);
+                allUsersCached = [];
+                snapshot.forEach(doc => {
+                    if(doc.data().uid !== currentUser.uid) allUsersCached.push(doc.data());
                 });
-            });
-
-            // 2. Daxil olduğun Qrupları gətir
-            const qGroups = query(collection(db, "chats"), where("members", "array-contains", currentUser.uid));
-            onSnapshot(qGroups, (snapshot) => {
-                const chatsList = document.getElementById('chats-list');
-                const existingGroups = document.querySelectorAll('.group-chat-item');
-                existingGroups.forEach(el => el.remove());
-
-                snapshot.forEach((doc) => {
-                    const group = doc.data();
-                    const div = document.createElement('div');
-                    div.className = "group-chat-item p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer transition border-b border-[#101921]";
-                    div.onclick = () => startGroupChat(doc.id, group.name);
-
-                    div.innerHTML = `
-                        <div class="w-10 h-10 bg-[#e07a5f] rounded-full flex items-center justify-center font-bold text-white"><i class="fas fa-users"></i></div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-sm text-white">${group.name}</h4>
-                            <p class="text-xs text-[#40a7e3] truncate">Qrup çatı</p>
-                        </div>
-                    `;
-                    chatsList.insertBefore(div, chatsList.firstChild.nextSibling);
-                });
+                renderChats(allUsersCached);
             });
         }
 
-        // Şəxsi Çata Kliklədikdə
+        // Çatları ekrana çəkən ana funksiya
+        function renderChats(usersArray) {
+            const container = document.getElementById('dynamic-chats');
+            container.innerHTML = "";
+
+            usersArray.forEach(user => {
+                const div = document.createElement('div');
+                div.className = "chat-item p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer transition border-b border-[#101921]";
+                div.setAttribute('data-name', user.name.toLowerCase());
+                div.onclick = () => startPrivateChat(user);
+
+                div.innerHTML = `
+                    ${user.avatar ? `<img src="${user.avatar}" class="w-10 h-10 rounded-full object-cover">` : `<div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold">${user.name.charAt(0).toUpperCase()}</div>`}
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-sm text-white">${user.name}</h4>
+                        <p class="text-xs text-gray-400 truncate">Şəxsi söhbət</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // YENİ: Canlı Axtarış funksiyası (Anlıq filtrasiya)
+        window.filterChats = function() {
+            const searchValue = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allUsersCached.filter(user => user.name.toLowerCase().includes(searchValue));
+            renderChats(filtered);
+        }
+
+        // Şəxsi Çatı Başlatmaq
         window.startPrivateChat = function(targetUser) {
             document.getElementById('no-chat-selected').classList.add('hidden');
             activeChatType = 'private';
-            // İki nəfər arasında unikal otaq ID-si yaradırıq (UID-ləri əlifba sırası ilə birləşdiririk)
             activeChatId = currentUser.uid < targetUser.uid ? `${currentUser.uid}_${targetUser.uid}` : `${targetUser.uid}_${currentUser.uid}`;
-
             document.getElementById('active-chat-title').innerText = targetUser.name;
             document.getElementById('active-chat-status').innerText = "şəxsi mesajlaşma";
             
@@ -265,29 +270,27 @@
                 document.getElementById('active-chat-avatar-placeholder').classList.remove('hidden');
                 document.getElementById('active-chat-avatar-placeholder').innerText = targetUser.name.charAt(0).toUpperCase();
             }
-
             listenToMessages();
         }
 
-        // Qrup Çatına Kliklədikdə
-        window.startGroupChat = function(groupId, groupName) {
+        // YENİ: Gemini Süni İntellekt Çatını Başlatmaq
+        window.startGeminiChat = function() {
             document.getElementById('no-chat-selected').classList.add('hidden');
-            activeChatType = 'group';
-            activeChatId = groupId;
-
-            document.getElementById('active-chat-title').innerText = groupName;
-            document.getElementById('active-chat-status').innerText = "qrup söhbəti";
+            activeChatType = 'gemini';
+            activeChatId = `gemini_${currentUser.uid}`; // Hər istifadəçinin öz şəxsi Gemini yaddaşı olsun
+            
+            document.getElementById('active-chat-title').innerText = "Gemini AI Bot";
+            document.getElementById('active-chat-status').innerText = "Süni İntellekt hər zaman aktivdir";
             document.getElementById('active-chat-avatar').classList.add('hidden');
             document.getElementById('active-chat-avatar-placeholder').classList.remove('hidden');
-            document.getElementById('active-chat-avatar-placeholder').innerHTML = `<i class="fas fa-users text-sm"></i>`;
-
+            document.getElementById('active-chat-avatar-placeholder').innerHTML = `<i class="fas fa-robot text-sm"></i>`;
+            
             listenToMessages();
         }
 
-        // Mesajları Canlı Dinləmək funksiyası
+        // Mesajları Canlı Dinləmək
         function listenToMessages() {
-            if(unsubscribeMessages) unsubscribeMessages(); // Əgər köhnə çat açıq idisə, onu dayandır
-
+            if(unsubscribeMessages) unsubscribeMessages();
             const q = query(collection(db, "chats_rooms", activeChatId, "messages"), orderBy("timestamp", "asc"));
             
             unsubscribeMessages = onSnapshot(q, (snapshot) => {
@@ -297,9 +300,12 @@
                 snapshot.forEach((doc) => {
                     const msg = doc.data();
                     const isMe = msg.senderUid === currentUser.uid;
+                    const isAI = msg.senderUid === "gemini_bot";
 
                     const div = document.createElement('div');
-                    div.className = `max-w-xs md:max-w-md p-3 shadow-md text-sm ${isMe ? 'my-msg text-white' : 'other-msg text-white'}`;
+                    if (isMe) div.className = "max-w-xs md:max-w-md p-3 shadow-md text-sm my-msg text-white";
+                    else if (isAI) div.className = "max-w-xs md:max-w-md p-3 shadow-md text-sm ai-msg text-white";
+                    else div.className = "max-w-xs md:max-w-md p-3 shadow-md text-sm other-msg text-white";
                     
                     div.innerHTML = `
                         ${!isMe ? `<p class="text-xs text-[#40a7e3] font-bold mb-1">${msg.senderName}</p>` : ''}
@@ -311,69 +317,61 @@
             });
         }
 
-        // Mesaj Göndərmək
+        // Mesaj Göndərmək (Həm dostuna, həm Gemini-yə)
         window.sendMessage = async function(e) {
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if(!text || !activeChatId) return;
 
-            await addDoc(collection(db, "chats_rooms", activeChatId, "messages"), {
-                text: text,
-                senderUid: currentUser.uid,
-                senderName: userData.name,
-                timestamp: serverTimestamp()
-            });
             input.value = "";
-        }
 
-        // Qrup Modalı və Yaradılması Funksiyaları
-        window.openGroupModal = async function() {
-            document.getElementById('group-modal').classList.remove('hidden');
-            const usersListDiv = document.getElementById('group-users-list');
-            usersListDiv.innerHTML = "";
-            selectedGroupUsers = [currentUser.uid]; // Özümüzü avtomatik əlavə edirik
-
-            const snapshot = await getDocs(collection(db, "users"));
-            snapshot.forEach(doc => {
-                const user = doc.data();
-                if(user.uid === currentUser.uid) return;
-
-                const label = document.createElement('label');
-                label.className = "flex items-center space-x-2 text-sm text-gray-300 p-1 cursor-pointer";
-                label.innerHTML = `
-                    <input type="checkbox" value="${user.uid}" onchange="toggleUserSelection(this)" class="rounded bg-gray-700">
-                    <span>${user.name}</span>
-                `;
-                usersListDiv.appendChild(label);
+            // 1. Öz mesajımızı bazaya yazırıq
+            await addDoc(collection(db, "chats_rooms", activeChatId, "messages"), {
+                text: text, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp()
             });
-        }
 
-        window.closeGroupModal = () => document.getElementById('group-modal').classList.add('hidden');
-
-        window.toggleUserSelection = function(checkbox) {
-            if(checkbox.checked) {
-                selectedGroupUsers.push(checkbox.value);
-            } else {
-                selectedGroupUsers = selectedGroupUsers.filter(id => id !== checkbox.value);
+            // 2. Əgər Gemini çatı aktivdirsə, Süni İntellekt funksiyasını çağırırıq
+            if (activeChatType === 'gemini') {
+                showAiTypingPlaceholder();
+                const aiResponse = await askGeminiAI(text);
+                
+                await addDoc(collection(db, "chats_rooms", activeChatId, "messages"), {
+                    text: aiResponse, senderUid: "gemini_bot", senderName: "Gemini Bot", timestamp: serverTimestamp()
+                });
             }
         }
 
-        window.createGroup = async function() {
-            const name = document.getElementById('group-name-input').value.trim();
-            if(!name) return alert("Qrup adı mütləqdir!");
-            if(selectedGroupUsers.length < 2) return alert("Qrup üçün ən azı daha 1 nəfər seçməlisiniz!");
-
-            await addDoc(collection(db, "chats"), {
-                name: name,
-                members: selectedGroupUsers,
-                createdAt: serverTimestamp()
-            });
-
-            document.getElementById('group-name-input').value = "";
-            closeGroupModal();
-            alert("Qrup uğurla yaradıldı!");
+        function showAiTypingPlaceholder() {
+            const container = document.getElementById('messages-container');
+            const div = document.createElement('div');
+            div.className = "max-w-xs p-3 text-sm ai-msg text-gray-400 italic id-typing";
+            div.innerText = "Gemini cavab yazır...";
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
+
+        // Gemini API ilə Əlaqə Funksiyası
+        async function askGeminiAI(promptText) {
+            if(GEMINI_API_KEY === "YURT_GEMINI_API_KEY_HERE") {
+                return `Salam! Mən Tomessenger daxilindəki Gemini-yəm. Məni real olaraq işlətmək üçün kodun daxilindəki 'GEMINI_API_KEY' hissəsinə öz rəsmi Google AI açarını yapışdırmalısan! Sənin mesajın: "${promptText}"`;
+            }
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                return "Təəssüf ki, Gemini API ilə bağlanarkən xəta baş verdi.";
+            }
+        }
+
+        // Qrup funksiyaları (Sadələşdirilib)
+        window.openGroupModal = () => document.getElementById('group-modal').classList.remove('hidden');
+        window.closeGroupModal = () => document.getElementById('group-modal').classList.add('hidden');
     </script>
 </body>
 </html>
