@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomessanger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0e1621; color: #ffffff; font-family: sans-serif; }
+        .tg-bg { background-color: #17212b; }
+        .tg-active { background-color: #2b5278; }
+        /* Telegram-ın klassik çat arxa fon naxışı */
+        .tg-chat-bg { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.95; }
+        .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; }
+        .other-msg { background-color: #182533; align-self: flex-start; border-radius: 12px 12px 12px 0px; }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center overflow-hidden">
+
+    <div id="auth-container" class="w-full max-w-md p-8 rounded-lg tg-bg shadow-lg z-10">
+        <h2 id="auth-title" class="text-2xl font-bold text-center mb-6">Tomessenger-ə Giriş</h2>
+        
+        <div class="space-y-4">
+            <input type="email" id="auth-email" placeholder="E-poçt ünvanı" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none focus:border-blue-500 text-white">
+            <input type="password" id="auth-password" placeholder="Şifrə" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 focus:outline-none focus:border-blue-500 text-white">
+            
+            <button id="btn-action" onclick="handleAuth()" class="w-full bg-[#2481cc] hover:bg-[#2071b3] text-white p-3 rounded font-semibold transition">Giriş Et</button>
+            
+            <p class="text-sm text-center text-gray-400 mt-4">
+                <span id="auth-switch-text">Hesabınız yoxdur?</span>
+                <button onclick="toggleAuthMode()" id="btn-switch" class="text-[#40a7e3] underline ml-1">Qeydiyyatdan keçin</button>
+            </p>
+        </div>
+    </div>
+
+    <div id="app-container" class="w-full h-screen flex hidden w-full">
+        
+        <div class="w-1/3 tg-bg border-r border-[#101921] flex flex-col">
+            <div class="p-4 flex justify-between items-center border-b border-[#101921]">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold text-white" id="user-avatar">U</div>
+                    <span class="font-medium truncate max-w-[150px] text-white" id="user-display-name">İstifadəçi</span>
+                </div>
+                <button onclick="logout()" class="text-gray-400 hover:text-red-500 transition" title="Çıxış et">
+                    <i class="fas fa-sign-out-alt text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-4 flex items-center space-x-3 tg-active cursor-pointer">
+                    <div class="w-12 h-12 bg-[#40a7e3] rounded-full flex items-center justify-center font-bold text-lg text-white">T</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-baseline">
+                            <h3 class="font-semibold text-sm text-white">Tomessenger Qlobal</h3>
+                            <span class="text-xs text-gray-400">Canlı</span>
+                        </div>
+                        <p class="text-xs text-gray-300 truncate mt-1">Hər kəs burada yazışır...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-[#0e1621] relative tg-chat-bg">
+            <div class="p-4 tg-bg flex items-center justify-between border-b border-[#101921] z-10">
+                <div>
+                    <h3 class="font-bold text-base text-white">Tomessenger Qlobal Çat</h3>
+                    <p class="text-xs text-[#40a7e3]">Onlayn icma</p>
+                </div>
+            </div>
+
+            <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10">
+                </div>
+
+            <form id="message-form" onsubmit="sendMessage(event)" class="p-4 tg-bg flex items-center space-x-3 z-10">
+                <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white placeholder-gray-500 focus:outline-none">
+                <button type="submit" class="w-12 h-12 bg-[#2b5278] hover:bg-[#2481cc] rounded-full flex items-center justify-center text-white transition">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Sənin Firebase məlumatların tam olaraq yerləşdirildi
+        const firebaseConfig = {
+            apiKey: "AIzaSyBphHHmIBl0vNONV7XYIrCcSRM0uBTIors",
+            authDomain: "tomessanger.firebaseapp.com",
+            projectId: "tomessanger",
+            storageBucket: "tomessanger.firebasestorage.app",
+            messagingSenderId: "542418746391",
+            appId: "1:542418746391:web:0bbbb96a1d5bc465dfb052"
+        };
+
+        // Firebase-i işə salırıq
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let isSignUpMode = false;
+        let currentUser = null;
+
+        // Giriş/Qeydiyyat formunu dəyişmək üçün funksiya
+        window.toggleAuthMode = function() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').innerText = isSignUpMode ? "Hesab Yarat" : "Tomessenger-ə Giriş";
+            document.getElementById('btn-action').innerText = isSignUpMode ? "Qeydiyyatdan Keç" : "Giriş Et";
+            document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Artıq hesabınız var?" : "Hesabınız yoxdur?";
+            document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
+        }
+
+        // Qeydiyyat və Giriş prosesi
+        window.handleAuth = async function() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            if(!email || !password) return alert("Zəhmət olmasa bütün xanaları doldurun!");
+
+            try {
+                if (isSignUpMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("Hesabınız uğurla yaradıldı!");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                alert("Xəta: " + error.message);
+            }
+        }
+
+        // Çıxış funksiyası
+        window.logout = function() {
+            signOut(auth);
+        }
+
+        // İstifadəçinin vəziyyətini izləyən funksiya (Session Control)
+        onAuthStateChanged(auth, (user) => {
+            const authContainer = document.getElementById('auth-container');
+            const appContainer = document.getElementById('app-container');
+
+            if (user) {
+                currentUser = user;
+                authContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                
+                // Profil məlumatlarını ekrana yazdırırıq
+                document.getElementById('user-display-name').innerText = user.email;
+                document.getElementById('user-avatar').innerText = user.email.charAt(0).toUpperCase();
+                
+                // Verilənlər bazasından mesajları canlı yüklə
+                loadMessages();
+            } else {
+                currentUser = null;
+                authContainer.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            }
+        });
+
+        // Mesaj göndərmə funksiyası
+        window.sendMessage = async function(e) {
+            e.preventDefault();
+            const msgInput = document.getElementById('msg-input');
+            const messageText = msgInput.value.trim();
+
+            if (!messageText || !currentUser) return;
+
+            try {
+                // Mesajı Firestore bazasına əlavə edirik
+                await addDoc(collection(db, "messages"), {
+                    text: messageText,
+                    senderEmail: currentUser.email,
+                    senderUid: currentUser.uid,
+                    timestamp: serverTimestamp()
+                });
+                msgInput.value = ""; // İnput sahəsini təmizlə
+            } catch (error) {
+                console.error("Mesaj göndərilərkən xəta yarandı: ", error);
+            }
+        }
+
+        // Mesajları real-vaxt rejimində bazadan oxumaq
+        function loadMessages() {
+            const q = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+            
+            onSnapshot(q, (snapshot) => {
+                const messagesContainer = document.getElementById('messages-container');
+                messagesContainer.innerHTML = ""; // Ekranda köhnə dublikat olmasın deyə təmizləyirik
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.senderUid === currentUser.uid;
+
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `max-w-xs md:max-w-md p-3 shadow-md text-sm ${isMe ? 'my-msg text-white' : 'other-msg text-white'}`;
+                    
+                    // Göndərənin adını e-poçtun ilk hissəsi kimi göstəririk (məsələn: test@mail.com -> test)
+                    const shortName = data.senderEmail ? data.senderEmail.split('@')[0] : "İstifadəçi";
+
+                    msgDiv.innerHTML = `
+                        ${!isMe ? `<p class="text-xs text-[#40a7e3] font-bold mb-1">${shortName}</p>` : ''}
+                        <p class="break-words">${data.text}</p>
+                    `;
+
+                    messagesContainer.appendChild(msgDiv);
+                });
+                
+                // Hər yeni mesaj gələndə ekranı ən aşağı sürüşdür
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
