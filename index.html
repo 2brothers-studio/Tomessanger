@@ -13,12 +13,13 @@
         .tg-bg { background-color: #17212b; }
         .tg-active { background-color: #2b5278; }
         .tg-chat-bg { background-image: url('https://githubusercontent.com'); opacity: 0.95; }
-        .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; position: relative; cursor: context-menu; display: flex; flex-direction: column; }
-        .other-msg { background-color: #182533; align-self: flex-start; border-radius: 12px 12px 12px 0px; position: relative; }
+        .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; position: relative; cursor: context-menu; display: flex; flex-direction: column; min-w-[80px]; max-w-xs; p-3; text-sm; color: #ffffff; }
+        .other-msg { background-color: #182533; align-self: flex-start; border-radius: 12px 12px 12px 0px; position: relative; max-w-xs; p-3; text-sm; color: #ffffff; }
         .dropdown-menu { display: none; position: absolute; background-color: #17212b; border: 1px solid #101921; z-index: 100; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
         .dropdown-menu button { width: 100%; text-align: left; padding: 8px 16px; font-size: 13px; }
         .dropdown-menu button:hover { background-color: #24303f; }
-        .tick-icon { font-size: 10px; margin-left: auto; padding-top: 2px; }
+        .tick-container { display: flex; justify-content: flex-end; width: 100%; margin-top: 4px; }
+        .tick-icon { font-size: 11px; }
         .tick-unread { color: #a2b0b8; }
         .tick-read { color: #40a7e3; }
     </style>
@@ -139,7 +140,3 @@
             <!-- Mesaj Giriş Paneli -->
             <form id="message-form" onsubmit="sendMessage(event)" class="p-4 tg-bg flex items-center space-x-3 z-10">
                 <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white focus:outline-none">
-                <button type="submit" id="send-btn" class="w-12 h-12 bg-[#2b5278] hover:bg-[#2481cc] rounded-full flex items-center justify-center text-white transition">
-                    <i class="fas fa-paper-plane" id="send-icon"></i>
-                </button>
-            </form>
