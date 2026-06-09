@@ -13,11 +13,14 @@
         .tg-bg { background-color: #17212b; }
         .tg-active { background-color: #2b5278; }
         .tg-chat-bg { background-image: url('https://githubusercontent.com'); opacity: 0.95; }
-        .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; position: relative; cursor: context-menu; }
+        .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; position: relative; cursor: context-menu; display: flex; flex-direction: column; }
         .other-msg { background-color: #182533; align-self: flex-start; border-radius: 12px 12px 12px 0px; position: relative; }
         .dropdown-menu { display: none; position: absolute; background-color: #17212b; border: 1px solid #101921; z-index: 100; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
         .dropdown-menu button { width: 100%; text-align: left; padding: 8px 16px; font-size: 13px; }
         .dropdown-menu button:hover { background-color: #24303f; }
+        .tick-icon { font-size: 10px; margin-left: auto; padding-top: 2px; }
+        .tick-unread { color: #a2b0b8; }
+        .tick-read { color: #40a7e3; }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center overflow-hidden" onclick="closeAllDropdowns()">
@@ -122,7 +125,7 @@
             </div>
 
             <!-- Mesajlar Sahəsi -->
-            <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
+            <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10" onclick="readAllMessages()"></div>
 
             <!-- Cavablama / Dəyişdirmə Paneli -->
             <div id="reply-preview" class="px-4 py-2 bg-[#182533] border-l-4 border-[#40a7e3] flex justify-between items-center hidden z-10">
@@ -140,8 +143,3 @@
                     <i class="fas fa-paper-plane" id="send-icon"></i>
                 </button>
             </form>
-        </div>
-    </div>
-
-    <!-- Mesaj üçün Kontekst Menyusu (Dəyişdir / Sil) -->
-    <div id="message-dropdown" class="dropdown-menu w-36">
