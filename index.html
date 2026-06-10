@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v7.0</title>
+    <title>Tomessenger Glass v9.0 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -16,28 +16,16 @@
         }
 
         .liquid-bg {
-            position: absolute;
-            width: 500px;
-            height: 500px;
+            position: absolute; width: 500px; height: 500px;
             background: linear-gradient(45deg, #4f46e5, #06b6d4);
-            filter: blur(80px);
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            animation: liquidAnimate 15s infinite alternate ease-in-out;
-            z-index: 1;
-            opacity: 0.4;
+            filter: blur(80px); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animation: liquidAnimate 15s infinite alternate ease-in-out; z-index: 1; opacity: 0.4;
         }
         .liquid-bg-2 {
-            position: absolute;
-            right: 10%;
-            bottom: 10%;
-            width: 400px;
-            height: 400px;
+            position: absolute; right: 10%; bottom: 10%; width: 400px; height: 400px;
             background: linear-gradient(45deg, #d946ef, #6366f1);
-            filter: blur(100px);
-            border-radius: 50%;
-            animation: liquidAnimate 20s infinite alternate-reverse ease-in-out;
-            z-index: 1;
-            opacity: 0.3;
+            filter: blur(100px); border-radius: 50%;
+            animation: liquidAnimate 20s infinite alternate-reverse ease-in-out; z-index: 1; opacity: 0.3;
         }
 
         @keyframes liquidAnimate {
@@ -46,36 +34,27 @@
         }
 
         .glass-panel {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         .glass-input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px); transition: all 0.3s ease;
         }
         .glass-input:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #06b6d4;
+            background: rgba(255, 255, 255, 0.1); border-color: #06b6d4;
             box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
         }
 
         .my-msg { 
             background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(79, 70, 229, 0.25));
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            align-self: flex-end; 
-            border-radius: 16px 16px 0px 16px; 
+            border: 1px solid rgba(255, 255, 255, 0.15); align-self: flex-end; border-radius: 16px 16px 0px 16px; 
         }
         .other-msg { 
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            align-self: flex-start; 
-            border-radius: 16px 16px 16px 0px; 
+            background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.05);
+            align-self: flex-start; border-radius: 16px 16px 16px 0px; 
         }
 
         @media (max-width: 768px) {
@@ -88,6 +67,8 @@
         .dropdown-menu { display: none; position: absolute; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100; border-radius: 12px; }
         .dropdown-menu button { width: 100%; text-align: left; padding: 10px 18px; font-size: 13px; transition: background 0.2s; }
         .dropdown-menu button:hover { background: rgba(255,255,255,0.1); }
+        
+        .reaction-bar { display: none; position: absolute; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 8px; z-index: 50; gap: 6px; }
     </style>
 </head>
 <body class="h-screen flex items-center justify-center relative overflow-hidden" onclick="closeAllDropdowns()">
@@ -96,6 +77,13 @@
     <div class="liquid-bg-2"></div>
 
     <div id="push-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none w-80"></div>
+
+    <div id="reaction-popup" class="reaction-bar flex shadow-2xl">
+        <button onclick="sendReaction('👍')" class="hover:scale-130 transition-transform text-lg">👍</button>
+        <button onclick="sendReaction('❤️')" class="hover:scale-130 transition-transform text-lg">❤️</button>
+        <button onclick="sendReaction('😂')" class="hover:scale-130 transition-transform text-lg">😂</button>
+        <button onclick="sendReaction('😮')" class="hover:scale-130 transition-transform text-lg">😮</button>
+    </div>
 
     <div id="auth-container" class="w-full max-w-md p-8 rounded-2xl glass-panel z-10">
         <h2 id="auth-title" class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Tomessenger Pro</h2>
@@ -125,7 +113,7 @@
                         <span id="my-avatar-txt">U</span>
                         <div class="absolute inset-0 bg-black/40 items-center justify-center hidden group-hover:flex text-[10px]">Dəyiş</div>
                     </div>
-                    <span class="font-semibold truncate max-w-[140px]" id="my-name">Yüklənir...</span>
+                    <span class="font-semibold truncate max-w-[140px] cursor-pointer hover:text-cyan-400 transition-colors" id="my-name" onclick="changeMyName()" title="Adı dəyiş">Yüklənir...</span>
                 </div>
                 <button onclick="logout()" class="text-gray-400 hover:text-red-400 transition-colors"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
@@ -166,41 +154,28 @@
                         <p class="text-xs text-cyan-400" id="active-chat-status">Söhbət otağı</p>
                     </div>
                 </div>
-                <div class="relative">
-                    <button onclick="toggleChatDropdown(event)" class="text-gray-400 hover:text-white p-2"><i class="fas fa-ellipsis-v text-lg"></i></button>
-                    <div id="chat-dropdown" class="dropdown-menu right-0 mt-2 w-48">
-                        <button onclick="handleBlockActions()" id="block-btn" class="text-amber-400"><i class="fas fa-ban mr-2"></i>Blokla</button>
-                        <button onclick="deleteCurrentChat()" class="text-red-400"><i class="fas fa-trash mr-2"></i>Çatı Sil</button>
-                    </div>
-                </div>
             </div>
 
-            <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
+            <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-4 z-10"></div>
 
-            <div id="ban-overlay" class="p-3 bg-red-500/20 border-t border-red-500/30 backdrop-blur-md text-center text-sm font-bold text-red-300 hidden z-20">
-                ⚠️ Spam səbəbilə BAN! Qalan vaxt: <span id="ban-timer">60:00</span>
-            </div>
+            <form id="message-form" onsubmit="sendMessage(event)" class="p-4 bg-white/5 flex items-center space-x-2 z-10 border-t border-white/10">
+                
+                <input type="file" id="chat-file-input" class="hidden" onchange="handleChatFileSelect(event)">
+                <button type="button" onclick="document.getElementById('chat-file-input').click()" class="w-11 h-11 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-cyan-400 rounded-xl flex items-center justify-center border border-white/10 transition-all">
+                    <i class="fas fa-paperclip text-lg"></i>
+                </button>
 
-            <div id="reply-preview" class="px-4 py-2 bg-white/5 border-l-4 border-cyan-400 flex justify-between items-center hidden z-10">
-                <div>
-                    <p class="text-xs text-cyan-400 font-bold">Cavablandırılır:</p>
-                    <p id="reply-preview-text" class="text-xs text-gray-300 truncate max-w-md"></p>
-                </div>
-                <button onclick="cancelReply()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
-            </div>
+                <input type="text" id="msg-input" oninput="notifyTyping()" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-xl glass-input text-white focus:outline-none">
+                
+                <button type="button" id="voice-btn" onclick="toggleVoiceRecord()" class="w-11 h-11 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-red-400 rounded-xl flex items-center justify-center border border-white/10 transition-all" title="Səsli Mesaj">
+                    <i class="fas fa-microphone text-lg" id="voice-icon"></i>
+                </button>
 
-            <form id="message-form" onsubmit="sendMessage(event)" class="p-4 bg-white/5 flex items-center space-x-3 z-10 border-t border-white/10">
-                <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-xl glass-input text-white focus:outline-none">
-                <button type="submit" id="send-btn" class="w-12 h-12 bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 rounded-xl flex items-center justify-center text-white transition-all shadow-md">
-                    <i class="fas fa-paper-plane" id="send-icon"></i>
+                <button type="submit" id="send-btn" class="w-11 h-11 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
         </div>
-    </div>
-
-    <div id="message-dropdown" class="dropdown-menu w-36 shadow-2xl">
-        <button onclick="triggerEditMessage()"><i class="fas fa-edit mr-2 text-cyan-400"></i>Dəyişdir</button>
-        <button onclick="deleteMessage()"><i class="fas fa-trash mr-2 text-red-400"></i>Sil</button>
     </div>
 
     <script type="module">
@@ -223,20 +198,21 @@
 
         let isSignUpMode = false;
         let currentUser = null;
-        let userData = { name: "", blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "", banUntil: null };
+        let userData = { name: "", blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "" };
         let activeChatId = null;
         let activeChatType = "private"; 
         let targetUserData = null;
         let unsubscribeMessages = null;
         
-        let repliedMessageId = null;
-        let selectedMessageId = null;
-        let isEditingMode = false;
-
-        let messageTimestamps = [];
-        let banEndTime = null;
         let allUsersMap = {};
         let searchQuery = "";
+        let typingTimeout = null;
+        
+        // Səs yazma dəyişənləri
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let selectedMessageIdForReaction = null;
 
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
@@ -254,15 +230,15 @@
             const name = document.getElementById('auth-name').value.trim();
             const phone = document.getElementById('auth-phone').value.trim();
 
-            if(!email || !password) return alert("Məlumatları doldurun!");
+            if(!email || !password) return alert("Sahələri doldurun!");
 
             try {
                 if (isSignUpMode) {
-                    if(!name) return alert("Ad sahəsini doldurun!");
+                    if(!name) return alert("Ad yazın!");
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     await setDoc(doc(db, "users", res.user.uid), {
                         uid: res.user.uid, name: name, email: email, phone: phone || "",
-                        blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "", banUntil: null
+                        blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "", status: "online"
                     });
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
@@ -270,34 +246,32 @@
             } catch (e) { alert(e.message); }
         }
 
-        window.logout = () => signOut(auth);
+        window.logout = async () => {
+            if(currentUser) await updateDoc(doc(db, "users", currentUser.uid), { status: "offline" });
+            signOut(auth);
+        }
+
+        window.changeMyName = async function() {
+            const newName = prompt("Yeni adınız:", userData.name);
+            if(newName && newName.trim() !== "") {
+                await updateDoc(doc(db, "users", currentUser.uid), { name: newName.trim() });
+            }
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                const d = await getDoc(doc(db, "users", user.uid));
-                const data = d.data() || {};
-                userData = {
-                    uid: user.uid,
-                    name: data.name || "İstifadəçi",
-                    blockedUsers: data.blockedUsers || [],
-                    deletedChats: data.deletedChats || [],
-                    hiddenUsers: data.hiddenUsers || [],
-                    avatarUrl: data.avatarUrl || "",
-                    banUntil: data.banUntil || null
-                };
+                await updateDoc(doc(db, "users", user.uid), { status: "online" });
                 
-                if(userData.banUntil && userData.banUntil > Date.now()) {
-                    activateBanSystem(userData.banUntil);
-                }
+                onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+                    const data = docSnap.data() || {};
+                    userData = { ...userData, ...data };
+                    document.getElementById('my-name').innerText = userData.name;
+                    updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
+                });
 
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
-                document.getElementById('my-name').innerText = userData.name;
-                
-                // Profil şəklini göstər və ya baş hərfini qoy
-                updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
-                
                 loadUsersAndSync();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
@@ -305,18 +279,12 @@
             }
         });
 
-        // 📷 PROFİL ŞƏKLİNİN YÜKLƏNMƏSİ (Base64 ilə verilənlər bazasına qeyd olunur)
         window.uploadAvatar = function(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onloadend = async function() {
-                const base64String = reader.result;
-                // Firestore-da istifadəçinin avatar ünvanını yeniləyirik
-                await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: base64String });
-                userData.avatarUrl = base64String;
-                updateAvatarUI('my-avatar-img', 'my-avatar-txt', base64String, userData.name);
+                await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: reader.result });
             }
             reader.readAsDataURL(file);
         }
@@ -325,47 +293,31 @@
             const imgEl = document.getElementById(imgId);
             const txtEl = document.getElementById(txtId);
             if(url) {
-                imgEl.src = url;
-                imgEl.classList.remove('hidden');
-                txtEl.classList.add('hidden');
+                imgEl.src = url; imgEl.classList.remove('hidden'); txtEl.classList.add('hidden');
             } else {
-                imgEl.classList.add('hidden');
-                txtEl.innerText = (name || "U").charAt(0).toUpperCase();
-                txtEl.classList.remove('hidden');
+                imgEl.classList.add('hidden'); txtEl.innerText = (name || "U").charAt(0).toUpperCase(); txtEl.classList.remove('hidden');
             }
         }
 
         async function loadUsersAndSync() {
-            const usersSnap = await getDocs(collection(db, "users"));
-            allUsersMap = {};
-            usersSnap.forEach(docSnap => {
-                const u = docSnap.data();
-                allUsersMap[u.uid] = u;
-            });
-
             onSnapshot(collection(db, "users"), (snapshot) => {
-                snapshot.forEach(docSnap => {
-                    allUsersMap[docSnap.id] = docSnap.data();
-                });
+                allUsersMap = {};
+                snapshot.forEach(docSnap => { allUsersMap[docSnap.id] = docSnap.data(); });
                 renderSidebarList();
             });
         }
 
-        // 🔍 AXTARIŞ FUNKSİYASI
         window.filterUsers = function() {
             searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
             renderSidebarList();
         }
 
-        // 🗑️ SOL SİYAHIDAN İSTİFADƏÇİNİ SİLMƏK/GİZLƏTMƏK
         window.hideUserFromList = async function(e, targetUid) {
-            e.stopPropagation(); // Çatın açılmasının qarşısını alır
-            if(confirm("Bu şəxsi siyahınızdan silmək istəyirsiniz?")) {
+            e.stopPropagation();
+            if(confirm("Siyahıdan silinsin?")) {
                 if(!userData.hiddenUsers) userData.hiddenUsers = [];
                 userData.hiddenUsers.push(targetUid);
-                
                 await updateDoc(doc(db, "users", currentUser.uid), { hiddenUsers: userData.hiddenUsers });
-                renderSidebarList();
             }
         }
 
@@ -375,77 +327,111 @@
 
             Object.values(allUsersMap).forEach(user => {
                 if(user.uid === currentUser.uid) return;
-
-                // Əgər silinibsə və ya axtarışa uyğun deyilsə siyahıya çıxartma
                 if(userData.hiddenUsers && userData.hiddenUsers.includes(user.uid)) return;
                 if(searchQuery && !user.name.toLowerCase().includes(searchQuery)) return;
 
-                const roomDeterministicId = currentUser.uid < user.uid ? `${currentUser.uid}_${user.uid}` : `${user.uid}_${currentUser.uid}`;
-                if(userData.deletedChats && userData.deletedChats.includes(roomDeterministicId)) return;
+                const isOnline = user.status === "online";
+                const isTyping = user.typingTo === currentUser.uid;
 
                 const div = document.createElement('div');
-                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all border border-transparent group relative";
+                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all relative group";
                 div.onclick = () => { startPrivateChat(user); };
 
-                // İstifadəçinin profil şəkli varmı yoxlaması
-                const hasAvatar = user.avatarUrl;
-                const avatarContent = hasAvatar 
-                    ? `<img class="w-full h-full object-cover" src="${user.avatarUrl}">` 
-                    : `<span>${(user.name || "U").charAt(0).toUpperCase()}</span>`;
+                const avatarContent = user.avatarUrl ? `<img class="w-full h-full object-cover" src="${user.avatarUrl}">` : `<span>${(user.name || "U").charAt(0).toUpperCase()}</span>`;
 
                 div.innerHTML = `
-                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white shadow-md overflow-hidden">${avatarContent}</div>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white shadow-md overflow-hidden relative">
+                        ${avatarContent}
+                        <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-slate-900 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-500'}"></span>
+                    </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center">
                             <h4 class="font-semibold text-sm text-white truncate pr-5">${user.name}</h4>
-                            <span id="badge-${user.uid}" class="text-xs text-cyan-400 font-bold"></span>
                         </div>
-                        <p class="text-xs text-gray-400 truncate" id="last-msg-${user.uid}">Söhbət açmaq üçün toxunun</p>
+                        <p class="text-xs ${isTyping ? 'text-green-400 font-bold animate-pulse' : 'text-gray-400'} truncate">
+                            ${isTyping ? "yazır..." : "Söhbət açmaq üçün toxunun"}
+                        </p>
                     </div>
-                    <button onclick="hideUserFromList(event, '${user.uid}')" class="absolute right-3 top-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-xs">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button onclick="hideUserFromList(event, '${user.uid}')" class="absolute right-3 top-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 p-1 text-xs"><i class="fas fa-times"></i></button>
                 `;
                 container.appendChild(div);
             });
         }
 
-        window.backToSidebar = function() {
-            document.getElementById('chat-panel').classList.remove('active');
-            document.getElementById('sidebar-panel').classList.remove('hidden-mob');
+        window.notifyTyping = function() {
+            if(activeChatType !== "private" || !activeChatId) return;
+            updateDoc(doc(db, "users", currentUser.uid), { typingTo: targetUserData.uid });
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => { updateDoc(doc(db, "users", currentUser.uid), { typingTo: null }); }, 2000);
+        }
+
+        // 📎 LOCAL FAYL SİSTEMİ (Maks 1GB, Serverə getmir)
+        window.handleChatFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 1024 * 1024 * 1024) return alert("Maksimum limit 1 GB-dır!");
+            const fileUrl = URL.createObjectURL(file);
+            let fileType = "file";
+
+            if (file.type.startsWith("image/")) fileType = "image";
+            else if (file.type.startsWith("video/")) fileType = "video";
+
+            sendMediaMessage(fileUrl, file.name, fileType);
+        }
+
+        // 🎤 LOKAL SƏS YAZMA SİSTEMİ (Server Yaddaşı Tutmur)
+        window.toggleVoiceRecord = async function() {
+            const icon = document.getElementById('voice-icon');
+            if (!isRecording) {
+                // Səs yazmanı başlat
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    sendMediaMessage(audioUrl, "Səsli Mesaj", "audio");
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                icon.className = "fas fa-stop text-red-500 animate-pulse";
+            } else {
+                // Səs yazmanı dayandır
+                mediaRecorder.stop();
+                isRecording = false;
+                icon.className = "fas fa-microphone text-lg";
+            }
+        }
+
+        async function sendMediaMessage(url, name, type) {
+            await addDoc(collection(db, "rooms", activeChatId, "messages"), {
+                text: name, fileUrl: url, fileType: type, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp()
+            });
         }
 
         window.startPrivateChat = function(targetUser) {
-            if(!targetUser) return;
-            targetUserData = targetUser;
-            activeChatType = "private";
+            targetUserData = targetUser; activeChatType = "private";
             activeChatId = currentUser.uid < targetUser.uid ? `${currentUser.uid}_${targetUser.uid}` : `${targetUser.uid}_${currentUser.uid}`;
-            
             document.getElementById('chat-panel').classList.add('active');
             document.getElementById('sidebar-panel').classList.add('hidden-mob');
             document.getElementById('no-chat-selected').classList.add('hidden');
-
             document.getElementById('active-chat-title').innerText = targetUser.name;
             document.getElementById('active-chat-status').innerText = "şəxsi söhbət";
-            
             updateAvatarUI('active-chat-avatar-img', 'active-chat-avatar-txt', targetUser.avatarUrl, targetUser.name);
-
-            const isBlocked = userData.blockedUsers && userData.blockedUsers.includes(targetUserData.uid);
-            document.getElementById('block-btn').innerHTML = isBlocked ? `<i class="fas fa-unlock mr-2"></i>Blokdan Çıxart` : `<i class="fas fa-ban mr-2"></i>Blokla`;
-
             listenMessages();
         }
 
         window.startGlobalGroupChat = function() {
-            activeChatType = "global";
-            activeChatId = "global_main_help_room";
-            
+            activeChatType = "global"; activeChatId = "global_main_help_room";
             document.getElementById('chat-panel').classList.add('active');
             document.getElementById('sidebar-panel').classList.add('hidden-mob');
             document.getElementById('no-chat-selected').classList.add('hidden');
-            
             document.getElementById('active-chat-title').innerText = "Ümumdünya Kömək Qrupu";
-            document.getElementById('active-chat-status').innerText = "Hər kəs yazıla bilər";
+            document.getElementById('active-chat-status').innerText = "Açıq söhbət";
             document.getElementById('active-chat-avatar-container').innerHTML = `<i class="fas fa-globe"></i>`;
             listenMessages();
         }
@@ -455,7 +441,6 @@
             if(unsubscribeMessages) unsubscribeMessages();
             
             const q = query(collection(db, "rooms", activeChatId, "messages"), orderBy("timestamp", "asc"));
-            
             unsubscribeMessages = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('messages-container');
                 container.innerHTML = "";
@@ -464,38 +449,36 @@
                     const msg = docSnap.data();
                     const isMe = msg.senderUid === currentUser.uid;
 
-                    if(userData.blockedUsers && userData.blockedUsers.includes(msg.senderUid)) return;
-
-                    if(!isMe && msg.status !== "read") {
-                        updateDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id), { status: "read" });
-                    }
-
                     const div = document.createElement('div');
-                    div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm cursor-context-menu ${isMe ? 'my-msg' : 'other-msg'}`;
-                    div.oncontextmenu = (e) => openMessageMenu(e, docSnap.id, msg.text, isMe);
+                    div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm relative cursor-pointer ${isMe ? 'my-msg' : 'other-msg'}`;
                     
-                    let replyHTML = "";
-                    if(msg.replyToText) {
-                        replyHTML = `<div class="bg-black/30 p-2 rounded-lg text-xs mb-1 border-l-2 border-cyan-400 opacity-80 italic truncate">${msg.replyToText}</div>`;
+                    // Reaksiya pəncərəsini açmaq üçün klik hadisəsi
+                    div.onclick = (e) => openReactionMenu(e, docSnap.id);
+                    
+                    let contentHTML = `<p class="break-words">${msg.text}</p>`;
+                    
+                    if(msg.fileUrl) {
+                        if(msg.fileType === "image") {
+                            contentHTML = `<img src="${msg.fileUrl}" class="rounded-lg max-w-full h-auto max-h-60 object-contain">`;
+                        } else if(msg.fileType === "video") {
+                            contentHTML = `<video src="${msg.fileUrl}" controls class="rounded-lg max-w-full h-auto max-h-60"></video>`;
+                        } else if(msg.fileType === "audio") {
+                            contentHTML = `<audio src="${msg.fileUrl}" controls class="w-full max-w-[240px] mt-1"></audio>`;
+                        } else {
+                            contentHTML = `<a href="${msg.fileUrl}" download="${msg.text}" class="flex items-center space-x-2 text-cyan-400 underline"><i class="fas fa-file-download"></i> <span class="truncate">${msg.text}</span></a>`;
+                        }
                     }
 
-                    let ticks = "";
-                    if(isMe) {
-                        ticks = msg.status === "read" 
-                            ? `<span class="text-cyan-400 ml-2 text-[11px] font-bold"><i class="fas fa-check-double"></i></span>` 
-                            : `<span class="text-gray-400 ml-2 text-[11px]"><i class="fas fa-check"></i></span>`;
+                    // Reaksiyaların vizualı
+                    let reactionHTML = "";
+                    if(msg.reaction) {
+                        reactionHTML = `<span class="absolute -bottom-2 right-2 bg-slate-800 border border-white/10 rounded-full px-1.5 py-0.5 text-xs">${msg.reaction}</span>`;
                     }
 
                     div.innerHTML = `
-                        <div class="flex justify-between items-center space-x-4">
-                            <span class="text-[11px] text-cyan-400 font-bold">${isMe ? "Sən" : msg.senderName}</span>
-                            <button onclick="replyTo('${docSnap.id}', '${msg.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-white text-xs"><i class="fas fa-reply"></i></button>
-                        </div>
-                        ${replyHTML}
-                        <p class="break-words mt-1 flex justify-between items-end">
-                            <span>${msg.text} ${msg.isEdited ? '<span class="text-[9px] text-gray-500 ml-1">(edit)</span>' : ''}</span>
-                            ${ticks}
-                        </p>
+                        <span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>
+                        ${contentHTML}
+                        ${reactionHTML}
                     `;
                     container.appendChild(div);
                 });
@@ -503,40 +486,20 @@
             });
         }
 
-        function checkSpamProtection() {
-            const now = Date.now();
-            messageTimestamps.push(now);
-            messageTimestamps = messageTimestamps.filter(ts => now - ts < 3000);
-
-            if(messageTimestamps.length >= 10) {
-                const oneHour = 60 * 60 * 1000;
-                banEndTime = now + oneHour;
-                updateDoc(doc(db, "users", currentUser.uid), { banUntil: banEndTime });
-                activateBanSystem(banEndTime);
-                return false;
-            }
-            return true;
+        // ❤️ EMOJİ REAKSİYA MENYUSUNU AÇMAQ
+        function openReactionMenu(e, msgId) {
+            e.stopPropagation();
+            selectedMessageIdForReaction = msgId;
+            const popup = document.getElementById('reaction-popup');
+            popup.style.display = 'flex';
+            popup.style.left = e.pageX + 'px';
+            popup.style.top = (e.pageY - 40) + 'px';
         }
 
-        function activateBanSystem(untilTime) {
-            document.getElementById('msg-input').disabled = true;
-            document.getElementById('send-btn').disabled = true;
-            document.getElementById('ban-overlay').classList.remove('hidden');
-
-            const timer = setInterval(() => {
-                const timeLeft = untilTime - Date.now();
-                if(timeLeft <= 0) {
-                    clearInterval(timer);
-                    document.getElementById('msg-input').disabled = false;
-                    document.getElementById('send-btn').disabled = false;
-                    document.getElementById('ban-overlay').classList.add('hidden');
-                    updateDoc(doc(db, "users", currentUser.uid), { banUntil: null });
-                } else {
-                    const minutes = Math.floor(timeLeft / 60000);
-                    const seconds = Math.floor((timeLeft % 60000) / 1000);
-                    document.getElementById('ban-timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                }
-            }, 1000);
+        window.sendReaction = async function(emoji) {
+            if(!selectedMessageIdForReaction) return;
+            await updateDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageIdForReaction), { reaction: emoji });
+            closeAllDropdowns();
         }
 
         window.sendMessage = async function(e) {
@@ -545,110 +508,20 @@
             const text = input.value.trim();
             if(!text || !activeChatId) return;
 
-            if(!checkSpamProtection()) return;
-
-            if(activeChatType === "private" && targetUserData && targetUserData.blockedUsers && targetUserData.blockedUsers.includes(currentUser.uid)) {
-                alert("Bu istifadəçiyə mesaj göndərə bilməzsiniz.");
-                return;
-            }
-
-            if(isEditingMode) {
-                await updateDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageId), { text: text, isEdited: true });
-                cancelEdit();
-            } else {
-                let payload = {
-                    text: text, senderUid: currentUser.uid, senderName: userData.name || "Anonim", timestamp: serverTimestamp(), status: "sent"
-                };
-                if(repliedMessageId) {
-                    payload.replyToId = repliedMessageId;
-                    payload.replyToText = document.getElementById('reply-preview-text').innerText;
-                }
-                await addDoc(collection(db, "rooms", activeChatId, "messages"), payload);
-                cancelReply();
-            }
+            await addDoc(collection(db, "rooms", activeChatId, "messages"), {
+                text: text, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp()
+            });
+            updateDoc(doc(db, "users", currentUser.uid), { typingTo: null });
             input.value = "";
         }
 
-        window.replyTo = function(id, text) {
-            repliedMessageId = id;
-            document.getElementById('reply-preview').classList.remove('hidden');
-            document.getElementById('reply-preview-text').innerText = text;
-        }
-        window.cancelReply = function() {
-            repliedMessageId = null;
-            document.getElementById('reply-preview').classList.add('hidden');
-        }
-
-        function openMessageMenu(e, msgId, currentText, isMe) {
-            e.preventDefault();
-            if(!isMe) return; 
-            selectedMessageId = msgId;
-            window.tempMsgText = currentText;
-
-            const menu = document.getElementById('message-dropdown');
-            menu.style.display = 'block';
-            menu.style.left = e.pageX + 'px';
-            menu.style.top = e.pageY + 'px';
-        }
-
-        window.triggerEditMessage = function() {
-            isEditingMode = true;
-            document.getElementById('msg-input').value = window.tempMsgText;
-            document.getElementById('send-icon').className = "fas fa-check";
-        }
-
-        function cancelEdit() {
-            isEditingMode = false;
-            document.getElementById('send-icon').className = "fas fa-paper-plane";
-        }
-
-        window.deleteMessage = async function() {
-            if(confirm("Mesajı silmək istəyirsiniz?")) {
-                await deleteDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageId));
-            }
-        }
-
-        window.toggleChatDropdown = function(e) {
-            e.stopPropagation();
-            const menu = document.getElementById('chat-dropdown');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
-
-        window.handleBlockActions = async function() {
-            if(!targetUserData) return;
-            let blocks = userData.blockedUsers || [];
-            const idx = blocks.indexOf(targetUserData.uid);
-            if(idx > -1) blocks.splice(idx, 1);
-            else blocks.push(targetUserData.uid);
-            
-            await updateDoc(doc(db, "users", currentUser.uid), { blockedUsers: blocks });
-            userData.blockedUsers = blocks;
-            startPrivateChat(targetUserData);
-        }
-
-        window.deleteCurrentChat = async function() {
-            if(activeChatType === "global") return alert("Qlobal qrupu silə bilməzsiniz!");
-            if(!activeChatId) return;
-
-            if(confirm("Bu çatı silmək istəyirsiniz?")) {
-                const snapshot = await getDocs(collection(db, "rooms", activeChatId, "messages"));
-                snapshot.forEach(async (docSnap) => {
-                    await deleteDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id));
-                });
-
-                if(!userData.deletedChats) userData.deletedChats = [];
-                userData.deletedChats.push(activeChatId);
-                await updateDoc(doc(db, "users", currentUser.uid), { deletedChats: userData.deletedChats });
-
-                document.getElementById('no-chat-selected').classList.remove('hidden');
-                backToSidebar();
-                renderSidebarList();
-            }
+        window.backToSidebar = function() {
+            document.getElementById('chat-panel').classList.remove('active');
+            document.getElementById('sidebar-panel').classList.remove('hidden-mob');
         }
 
         window.closeAllDropdowns = function() {
-            document.getElementById('message-dropdown').style.display = 'none';
-            document.getElementById('chat-dropdown').style.display = 'none';
+            document.getElementById('reaction-popup').style.display = 'none';
         }
     </script>
 </body>
