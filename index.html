@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Pro v5.1</title>
+    <title>Tomessenger Pro v5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -138,7 +138,7 @@
 
         let isSignUpMode = false;
         let currentUser = null;
-        let userData = null;
+        let userData = { name: "", blockedUsers: [], deletedChats: [], banUntil: null };
         let activeChatId = null;
         let activeChatType = "private"; 
         let targetUserData = null;
@@ -160,6 +160,7 @@
             document.getElementById('btn-action').innerText = isSignUpMode ? "Qeydiyyatı Tamamla" : "Giriş Et";
         }
 
+        // QEYDİYYAT XƏTASININ HƏLLİ: Boş verilənlər Firebase üçün təhlükəsiz formata salındı
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
@@ -170,9 +171,18 @@
 
             try {
                 if (isSignUpMode) {
+                    if(!name) return alert("Zəhmət olmasa adınızı daxil edin!");
                     const res = await createUserWithEmailAndPassword(auth, email, password);
+                    
+                    // Struktur tam sadələşdirildi ki Firebase rədd etməsin
                     await setDoc(doc(db, "users", res.user.uid), {
-                        uid: res.user.uid, name: name, email: email, phone: phone, blockedUsers: [], deletedChats: []
+                        uid: res.user.uid,
+                        name: name,
+                        email: email,
+                        phone: phone || "",
+                        blockedUsers: [],
+                        deletedChats: [],
+                        banUntil: null
                     });
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
@@ -186,9 +196,18 @@
             if (user) {
                 currentUser = user;
                 const d = await getDoc(doc(db, "users", user.uid));
-                userData = d.data() || {};
-                if(!userData.blockedUsers) userData.blockedUsers = [];
-                if(!userData.deletedChats) userData.deletedChats = [];
+                
+                // Əgər bazadan gələn məlumatda massivlər yoxdursa avtomatik təyin et (Crash-ın qarşısını alır)
+                const data = d.data() || {};
+                userData = {
+                    uid: user.uid,
+                    name: data.name || "İstifadəçi",
+                    email: data.email || "",
+                    phone: data.phone || "",
+                    blockedUsers: data.blockedUsers || [],
+                    deletedChats: data.deletedChats || [],
+                    banUntil: data.banUntil || null
+                };
                 
                 if(userData.banUntil && userData.banUntil > Date.now()) {
                     activateBanSystem(userData.banUntil);
@@ -196,10 +215,9 @@
 
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
-                document.getElementById('my-name').innerText = userData.name || "İstifadəçi";
-                document.getElementById('my-avatar-txt').innerText = (userData.name || "U").charAt(0).toUpperCase();
+                document.getElementById('my-name').innerText = userData.name;
+                document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
                 
-                // İlk öncə bütün istifadəçiləri xəritəyə yığırıq, sonra siyahını düzəldirik
                 loadUsersAndSync();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
@@ -207,17 +225,19 @@
             }
         });
 
-        // 🛠️ BÜTÜN BUG-LARIN HƏLLİ: Dinamik istifadəçi və Gizli gələn çatların sinxronizasiyası
         async function loadUsersAndSync() {
-            // 1. Sistemdəki hamını keşə yığ
             const usersSnap = await getDocs(collection(db, "users"));
+            allUsersMap = {}; // Keşi sıfırla
             usersSnap.forEach(docSnap => {
                 const u = docSnap.data();
                 allUsersMap[u.uid] = u;
             });
 
-            // 2. Canlı olaraq həm otaqları həm istifadəçiləri siyahıla
             onSnapshot(collection(db, "users"), (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    const u = docSnap.data();
+                    allUsersMap[u.uid] = u; // Yeni qeydiyyatdan keçənləri də xəritəyə daxil et
+                });
                 renderSidebarList();
             });
         }
@@ -229,7 +249,6 @@
             Object.values(allUsersMap).forEach(user => {
                 if(user.uid === currentUser.uid) return;
 
-                // Əgər istifadəçi bu çatı öz tərəfindən silibsə siyahıda göstərmə
                 const roomDeterministicId = currentUser.uid < user.uid ? `${currentUser.uid}_${user.uid}` : `${user.uid}_${currentUser.uid}`;
                 if(userData.deletedChats && userData.deletedChats.includes(roomDeterministicId)) return;
 
@@ -237,10 +256,9 @@
                 div.id = `sid-${user.uid}`;
                 div.className = "p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921]";
                 
-                // Klikləmə xətası aradan qaldırıldı - birbaşa obyekti ötürürük
-                div.addEventListener('click', () => {
+                div.onclick = () => {
                     startPrivateChat(user);
-                });
+                };
 
                 div.innerHTML = `
                     <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold text-white">${(user.name || "U").charAt(0).toUpperCase()}</div>
@@ -255,7 +273,6 @@
                 container.appendChild(div);
             });
             
-            // Gizli gələn mesajları da arxa fonda qulaqla
             listenForGlobalNotifications();
         }
 
@@ -264,7 +281,6 @@
             document.getElementById('sidebar-panel').classList.remove('hidden-mob');
         }
 
-        // Çatın tam başladılması (Həll olundu)
         window.startPrivateChat = function(targetUser) {
             if(!targetUser) return;
             targetUserData = targetUser;
@@ -352,7 +368,6 @@
             });
         }
 
-        // Spam bot mexanizmi
         function checkSpamProtection() {
             const now = Date.now();
             messageTimestamps.push(now);
@@ -407,7 +422,6 @@
                 snapshot.docChanges().forEach(change => {
                     const roomId = change.doc.id;
                     if(roomId.includes(currentUser.uid) && roomId !== activeChatId) {
-                        // Əgər silinmiş çatdırsa, siyahını yenidən aktivləşdir (Bug həlli)
                         if(userData.deletedChats && userData.deletedChats.includes(roomId)) {
                             userData.deletedChats = userData.deletedChats.filter(id => id !== roomId);
                             updateDoc(doc(db, "users", currentUser.uid), { deletedChats: userData.deletedChats });
@@ -486,3 +500,26 @@
             isEditingMode = true;
             document.getElementById('msg-input').value = window.tempMsgText;
             document.getElementById('send-icon').className = "fas fa-check";
+        }
+
+        function cancelEdit() {
+            isEditingMode = false;
+            document.getElementById('send-icon').className = "fas fa-paper-plane";
+        }
+
+        window.deleteMessage = async function() {
+            if(confirm("Mesajı silmək istəyirsiniz?")) {
+                await deleteDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageId));
+            }
+        }
+
+        window.toggleChatDropdown = function(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('chat-dropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        window.handleBlockActions = async function() {
+            if(!targetUserData) return;
+            let blocks = userData.blockedUsers || [];
+            const idx =
