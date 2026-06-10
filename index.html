@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Pro v5.0</title>
+    <title>Tomessenger Pro v5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,7 +17,6 @@
         .dropdown-menu button { width: 100%; text-align: left; padding: 8px 16px; font-size: 13px; }
         .dropdown-menu button:hover { background-color: #24303f; }
         
-        /* Mobil üçün xüsusi Telegram görünüşü */
         @media (max-width: 768px) {
             .sidebar-view { width: 100% !important; display: block; }
             .chat-view { width: 100% !important; display: none; position: fixed; inset: 0; z-index: 40; }
@@ -28,10 +27,8 @@
 </head>
 <body class="h-screen flex items-center justify-center overflow-hidden" onclick="closeAllDropdowns()">
 
-    <!-- PUSH BİLDİRİŞSİSTEMİ PANELİ -->
     <div id="push-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none w-80"></div>
 
-    <!-- 1. GİRİŞ VƏ QEYDİYYAT -->
     <div id="auth-container" class="w-full max-w-md p-8 rounded-lg tg-bg shadow-lg z-10">
         <h2 id="auth-title" class="text-2xl font-bold text-center mb-6">Tomessenger Pro</h2>
         <div class="space-y-4">
@@ -47,10 +44,8 @@
         </div>
     </div>
 
-    <!-- 2. ƏSAS MESSENCER EKRANI -->
     <div id="app-container" class="w-full h-screen flex hidden">
         
-        <!-- Sol Panel (Siyahı) -->
         <div id="sidebar-panel" class="sidebar-view w-1/3 tg-bg border-r border-[#101921] flex flex-col h-full">
             <div class="p-4 flex justify-between items-center border-b border-[#101921]">
                 <div class="flex items-center space-x-3">
@@ -61,7 +56,6 @@
             </div>
             
             <div class="flex-1 overflow-y-auto" id="chats-list">
-                <!-- Qlobal Kömək Qrupu -->
                 <div onclick="startGlobalGroupChat()" class="p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921] bg-[#1a2c3d]">
                     <div class="w-10 h-10 bg-[#e07a5f] rounded-full flex items-center justify-center font-bold text-white"><i class="fas fa-globe"></i></div>
                     <div class="flex-1">
@@ -69,26 +63,22 @@
                         <p class="text-xs text-gray-400 truncate">Açıq dəstək otağı</p>
                     </div>
                 </div>
-                <!-- Aktiv və gələn bütün çatlar avtomatik bura yığılır (Bug həll olundu!) -->
                 <div id="all-users-list"></div>
             </div>
         </div>
 
-        <!-- Sağ Panel (Çat Pəncərəsi) -->
         <div id="chat-panel" class="chat-view flex-1 flex flex-col bg-[#0e1621] relative tg-chat-bg">
-            <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0e1621] z-20 md:flex hidden">
+            <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0e1621] z-20 flex">
                 <p class="bg-[#182533] px-4 py-2 rounded-full text-sm text-gray-400">Yazışmaq üçün bir çat seçin</p>
             </div>
 
-            <!-- Çat Başlığı -->
             <div class="p-4 tg-bg flex items-center justify-between border-b border-[#101921] z-10">
                 <div class="flex items-center">
-                    <!-- Mobil üçün Geri Düyməsi -->
                     <button onclick="backToSidebar()" class="md:hidden mr-3 text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-lg"></i></button>
                     <div id="active-chat-avatar" class="w-10 h-10 bg-[#40a7e3] rounded-full flex items-center justify-center font-bold mr-3">?</div>
                     <div>
                         <h3 class="font-bold text-base" id="active-chat-title">Çat</h3>
-                        <p class="text-xs text-gray-400" id="active-chat-status">onlayn</p>
+                        <p class="text-xs text-gray-400" id="active-chat-status">Söhbət otağı</p>
                     </div>
                 </div>
                 <div class="relative">
@@ -100,15 +90,12 @@
                 </div>
             </div>
 
-            <!-- Mesajlar Sahəsi -->
             <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
 
-            <!-- Ban Mesajı Xəbərdarlığı -->
             <div id="ban-overlay" class="p-3 bg-red-900 bg-opacity-80 text-center text-sm font-bold text-white hidden z-20">
                 ⚠️ Spam etdiyiniz üçün 1 saatlıq BAN olundunuz! Qalan vaxt: <span id="ban-timer">60:00</span>
             </div>
 
-            <!-- Cavablama Paneli -->
             <div id="reply-preview" class="px-4 py-2 bg-[#182533] border-l-4 border-[#40a7e3] flex justify-between items-center hidden z-10">
                 <div>
                     <p class="text-xs text-[#40a7e3] font-bold">Cavablandırılır:</p>
@@ -117,7 +104,6 @@
                 <button onclick="cancelReply()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- Mesaj Giriş Paneli -->
             <form id="message-form" onsubmit="sendMessage(event)" class="p-4 tg-bg flex items-center space-x-3 z-10">
                 <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white focus:outline-none">
                 <button type="submit" id="send-btn" class="w-12 h-12 bg-[#2b5278] hover:bg-[#2481cc] rounded-full flex items-center justify-center text-white transition">
@@ -127,7 +113,6 @@
         </div>
     </div>
 
-    <!-- Mesaj üçün Kontekst Menyusu -->
     <div id="message-dropdown" class="dropdown-menu w-36">
         <button onclick="triggerEditMessage()"><i class="fas fa-edit mr-2 text-blue-400"></i>Dəyişdir</button>
         <button onclick="deleteMessage()"><i class="fas fa-trash mr-2 text-red-500"></i>Sil</button>
@@ -136,7 +121,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBphHHmIBl0vNONV7XYIrCcSRM0uBTIors",
@@ -163,9 +148,9 @@
         let selectedMessageId = null;
         let isEditingMode = false;
 
-        // Spam qorunması dəyişənləri
         let messageTimestamps = [];
         let banEndTime = null;
+        let allUsersMap = {};
 
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
@@ -187,7 +172,7 @@
                 if (isSignUpMode) {
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     await setDoc(doc(db, "users", res.user.uid), {
-                        uid: res.user.uid, name: name, email: email, phone: phone, blockedUsers: [], banUntil: null
+                        uid: res.user.uid, name: name, email: email, phone: phone, blockedUsers: [], deletedChats: []
                     });
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
@@ -201,76 +186,98 @@
             if (user) {
                 currentUser = user;
                 const d = await getDoc(doc(db, "users", user.uid));
-                userData = d.data();
+                userData = d.data() || {};
                 if(!userData.blockedUsers) userData.blockedUsers = [];
+                if(!userData.deletedChats) userData.deletedChats = [];
                 
-                // Ban vəziyyətini yoxla
                 if(userData.banUntil && userData.banUntil > Date.now()) {
                     activateBanSystem(userData.banUntil);
                 }
 
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
-                document.getElementById('my-name').innerText = userData.name;
-                document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
+                document.getElementById('my-name').innerText = userData.name || "İstifadəçi";
+                document.getElementById('my-avatar-txt').innerText = (userData.name || "U").charAt(0).toUpperCase();
                 
-                listenUsersAndRooms();
-                listenForGlobalNotifications();
+                // İlk öncə bütün istifadəçiləri xəritəyə yığırıq, sonra siyahını düzəldirik
+                loadUsersAndSync();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
             }
         });
 
-        // 🎯 BUGUN HƏLLİ: Həm qeydiyyatlı istifadəçiləri, həm də sənə gələn gizli otaqları dinləyir
-        function listenUsersAndRooms() {
+        // 🛠️ BÜTÜN BUG-LARIN HƏLLİ: Dinamik istifadəçi və Gizli gələn çatların sinxronizasiyası
+        async function loadUsersAndSync() {
+            // 1. Sistemdəki hamını keşə yığ
+            const usersSnap = await getDocs(collection(db, "users"));
+            usersSnap.forEach(docSnap => {
+                const u = docSnap.data();
+                allUsersMap[u.uid] = u;
+            });
+
+            // 2. Canlı olaraq həm otaqları həm istifadəçiləri siyahıla
             onSnapshot(collection(db, "users"), (snapshot) => {
-                const container = document.getElementById('all-users-list');
-                container.innerHTML = ""; 
-
-                snapshot.forEach(docSnap => {
-                    const user = docSnap.data();
-                    if(user.uid === currentUser.uid) return; 
-
-                    const div = document.createElement('div');
-                    div.id = `sid-${user.uid}`;
-                    div.className = "p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921]";
-                    div.onclick = () => startPrivateChat(user);
-                    div.innerHTML = `
-                        <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold">${user.name.charAt(0).toUpperCase()}</div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-center">
-                                <h4 class="font-semibold text-sm">${user.name}</h4>
-                                <span id="badge-${user.uid}" class="text-xs text-blue-400 font-bold"></span>
-                            </div>
-                            <p class="text-xs text-gray-400 truncate" id="last-msg-${user.uid}">Söhbətə başla</p>
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
+                renderSidebarList();
             });
         }
 
-        // 📱 Mobil Görünüş Keçidləri (Telegram Stil)
+        function renderSidebarList() {
+            const container = document.getElementById('all-users-list');
+            container.innerHTML = "";
+
+            Object.values(allUsersMap).forEach(user => {
+                if(user.uid === currentUser.uid) return;
+
+                // Əgər istifadəçi bu çatı öz tərəfindən silibsə siyahıda göstərmə
+                const roomDeterministicId = currentUser.uid < user.uid ? `${currentUser.uid}_${user.uid}` : `${user.uid}_${currentUser.uid}`;
+                if(userData.deletedChats && userData.deletedChats.includes(roomDeterministicId)) return;
+
+                const div = document.createElement('div');
+                div.id = `sid-${user.uid}`;
+                div.className = "p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921]";
+                
+                // Klikləmə xətası aradan qaldırıldı - birbaşa obyekti ötürürük
+                div.addEventListener('click', () => {
+                    startPrivateChat(user);
+                });
+
+                div.innerHTML = `
+                    <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold text-white">${(user.name || "U").charAt(0).toUpperCase()}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-semibold text-sm text-white">${user.name}</h4>
+                            <span id="badge-${user.uid}" class="text-xs text-blue-400 font-bold"></span>
+                        </div>
+                        <p class="text-xs text-gray-400 truncate" id="last-msg-${user.uid}">Söhbət etmək üçün klikləyin</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Gizli gələn mesajları da arxa fonda qulaqla
+            listenForGlobalNotifications();
+        }
+
         window.backToSidebar = function() {
             document.getElementById('chat-panel').classList.remove('active');
             document.getElementById('sidebar-panel').classList.remove('hidden-mob');
         }
 
-        // Çatın başladılması
+        // Çatın tam başladılması (Həll olundu)
         window.startPrivateChat = function(targetUser) {
+            if(!targetUser) return;
             targetUserData = targetUser;
             activeChatType = "private";
             activeChatId = currentUser.uid < targetUser.uid ? `${currentUser.uid}_${targetUser.uid}` : `${targetUser.uid}_${currentUser.uid}`;
             
-            // Mobil ekran idarəsi
             document.getElementById('chat-panel').classList.add('active');
             document.getElementById('sidebar-panel').classList.add('hidden-mob');
             document.getElementById('no-chat-selected').classList.add('hidden');
 
             document.getElementById('active-chat-title').innerText = targetUser.name;
             document.getElementById('active-chat-status').innerText = "şəxsi söhbət";
-            document.getElementById('active-chat-avatar').innerText = targetUser.name.charAt(0).toUpperCase();
+            document.getElementById('active-chat-avatar').innerText = (targetUser.name || "?").charAt(0).toUpperCase();
 
             const isBlocked = userData.blockedUsers && userData.blockedUsers.includes(targetUserData.uid);
             document.getElementById('block-btn').innerHTML = isBlocked ? `<i class="fas fa-unlock mr-2"></i>Blokdan Çıxart` : `<i class="fas fa-ban mr-2"></i>Blokla`;
@@ -292,9 +299,10 @@
             listenMessages();
         }
 
-        // Mesajları Canlı Oxumaq və Oxundu İşarəsi
         function listenMessages() {
+            if(!activeChatId) return;
             if(unsubscribeMessages) unsubscribeMessages();
+            
             const q = query(collection(db, "rooms", activeChatId, "messages"), orderBy("timestamp", "asc"));
             
             unsubscribeMessages = onSnapshot(q, (snapshot) => {
@@ -307,7 +315,6 @@
 
                     if(userData.blockedUsers && userData.blockedUsers.includes(msg.senderUid)) return;
 
-                    // 👁️ Oxundu mexanizmi: Əgər mesaj mənə gəlibsə və mən çata daxil olmuşamsa, statusu update et
                     if(!isMe && msg.status !== "read") {
                         updateDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id), { status: "read" });
                     }
@@ -321,7 +328,6 @@
                         replyHTML = `<div class="bg-black bg-opacity-20 p-2 rounded text-xs mb-1 border-l-2 border-white opacity-70 italic truncate">${msg.replyToText}</div>`;
                     }
 
-                    // Oxunub oxunmadığını göstərən tick simvolları
                     let ticks = "";
                     if(isMe) {
                         ticks = msg.status === "read" 
@@ -346,19 +352,15 @@
             });
         }
 
-        // 🚨 SPAMBOT VƏ BAN MEXANİZMİ
+        // Spam bot mexanizmi
         function checkSpamProtection() {
             const now = Date.now();
             messageTimestamps.push(now);
-
-            // Siyahıda ancaq son 3 saniyədəki mesajları saxlayırıq
             messageTimestamps = messageTimestamps.filter(ts => now - ts < 3000);
 
             if(messageTimestamps.length >= 10) {
                 const oneHour = 60 * 60 * 1000;
                 banEndTime = now + oneHour;
-                
-                // Verilənlər bazasında istifadəçini ban edirik
                 updateDoc(doc(db, "users", currentUser.uid), { banUntil: banEndTime });
                 activateBanSystem(banEndTime);
                 return false;
@@ -387,59 +389,57 @@
             }, 1000);
         }
 
-        // 🔔 REAL PUSH BİLDİRİŞ SİSTEMİ
         function showPushNotification(sender, text) {
             const container = document.getElementById('push-container');
             const toast = document.createElement('div');
             toast.className = "p-4 bg-[#17212b] border-l-4 border-blue-500 rounded shadow-2xl pointer-events-auto flex flex-col space-y-1 transition opacity duration-300";
             toast.innerHTML = `
                 <p class="text-xs text-blue-400 font-bold"><i class="fas fa-bell mr-1"></i> Yeni Mesaj</p>
-                <p class="text-sm font-semibold">${sender}</p>
+                <p class="text-sm font-semibold text-white">${sender}</p>
                 <p class="text-xs text-gray-300 truncate">${text}</p>
             `;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
-        // Qlobal bildiriş dinləyicisi (Arxa fonda gələn mesajlar üçün)
         function listenForGlobalNotifications() {
-            // Hər hansı bir otağa yeni mesaj düşəndə real-time push gəlsin
             onSnapshot(collection(db, "rooms"), (snapshot) => {
                 snapshot.docChanges().forEach(change => {
-                    if (change.type === "added" || change.type === "modified") {
-                        const roomId = change.doc.id;
-                        // Əgər mesaj mənim olduğum aktiv otaq deyilsə və mənə aiddirsə bildiriş çıxart
-                        if(roomId.includes(currentUser.uid) && roomId !== activeChatId) {
-                            const subQ = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp", "desc"));
-                            getDocs(subQ).then(messagesSnap => {
-                                if(!messagesSnap.empty) {
-                                    const lastMsg = messagesSnap.docs[0].data();
-                                    if(lastMsg.senderUid !== currentUser.uid && lastMsg.status !== "read") {
-                                        showPushNotification(lastMsg.senderName, lastMsg.text);
-                                        // Sol paneldə son mesajı yenilə
-                                        const el = document.getElementById(`last-msg-${lastMsg.senderUid}`);
-                                        if(el) el.innerText = lastMsg.text;
-                                    }
-                                }
-                            });
+                    const roomId = change.doc.id;
+                    if(roomId.includes(currentUser.uid) && roomId !== activeChatId) {
+                        // Əgər silinmiş çatdırsa, siyahını yenidən aktivləşdir (Bug həlli)
+                        if(userData.deletedChats && userData.deletedChats.includes(roomId)) {
+                            userData.deletedChats = userData.deletedChats.filter(id => id !== roomId);
+                            updateDoc(doc(db, "users", currentUser.uid), { deletedChats: userData.deletedChats });
+                            renderSidebarList();
                         }
+
+                        const subQ = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp", "desc"));
+                        getDocs(subQ).then(messagesSnap => {
+                            if(!messagesSnap.empty) {
+                                const lastMsg = messagesSnap.docs[0].data();
+                                if(lastMsg.senderUid !== currentUser.uid && lastMsg.status !== "read") {
+                                    showPushNotification(lastMsg.senderName, lastMsg.text);
+                                    const el = document.getElementById(`last-msg-${lastMsg.senderUid}`);
+                                    if(el) el.innerText = lastMsg.text;
+                                }
+                            }
+                        });
                     }
                 });
             });
         }
 
-        // Mesaj göndərmək
         window.sendMessage = async function(e) {
             e.preventDefault();
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
-            if(!text) return;
+            if(!text || !activeChatId) return;
 
-            // Spam yoxlanışı
             if(!checkSpamProtection()) return;
 
-            if(activeChatType === "private" && targetUserData.blockedUsers && targetUserData.blockedUsers.includes(currentUser.uid)) {
-                alert("Bu istifadəçiyə mesaj göndərə bilməzsiniz.");
+            if(activeChatType === "private" && targetUserData && targetUserData.blockedUsers && targetUserData.blockedUsers.includes(currentUser.uid)) {
+                alert("Bu istifadəçiyə mesaj göndərə bilməzsiniz (Sizi bloklayıb).");
                 return;
             }
 
@@ -448,7 +448,7 @@
                 cancelEdit();
             } else {
                 let payload = {
-                    text: text, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp(), status: "sent"
+                    text: text, senderUid: currentUser.uid, senderName: userData.name || "Anonim", timestamp: serverTimestamp(), status: "sent"
                 };
                 if(repliedMessageId) {
                     payload.replyToId = repliedMessageId;
@@ -486,50 +486,3 @@
             isEditingMode = true;
             document.getElementById('msg-input').value = window.tempMsgText;
             document.getElementById('send-icon').className = "fas fa-check";
-        }
-
-        function cancelEdit() {
-            isEditingMode = false;
-            document.getElementById('send-icon').className = "fas fa-paper-plane";
-        }
-
-        window.deleteMessage = async function() {
-            if(confirm("Mesajı silmək istəyirsiniz?")) {
-                await deleteDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageId));
-            }
-        }
-
-        window.toggleChatDropdown = function(e) {
-            e.stopPropagation();
-            const menu = document.getElementById('chat-dropdown');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
-
-        window.handleBlockActions = async function() {
-            let blocks = userData.blockedUsers || [];
-            const idx = blocks.indexOf(targetUserData.uid);
-            if(idx > -1) blocks.splice(idx, 1);
-            else blocks.push(targetUserData.uid);
-            
-            await updateDoc(doc(db, "users", currentUser.uid), { blockedUsers: blocks });
-            userData.blockedUsers = blocks;
-            startPrivateChat(targetUserData);
-        }
-
-        window.deleteCurrentChat = async function() {
-            if(confirm("Bütün çatı silmək istəyirsiniz?")) {
-                const snapshot = await getDocs(collection(db, "rooms", activeChatId, "messages"));
-                snapshot.forEach(async (docSnap) => {
-                    await deleteDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id));
-                });
-                backToSidebar();
-            }
-        }
-
-        window.closeAllDropdowns = function() {
-            document.getElementById('message-dropdown').style.display = 'none';
-            document.getElementById('chat-dropdown').style.display = 'none';
-        }
-    </script>
-</body>
-</html>
