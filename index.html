@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Pro</title>
+    <title>Tomessenger Pro v4.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -20,7 +20,6 @@
 </head>
 <body class="h-screen flex items-center justify-center overflow-hidden" onclick="closeAllDropdowns()">
 
-    <!-- 1. GİRİŞ VƏ QEYDİYYAT -->
     <div id="auth-container" class="w-full max-w-md p-8 rounded-lg tg-bg shadow-lg z-10">
         <h2 id="auth-title" class="text-2xl font-bold text-center mb-6">Tomessenger Pro</h2>
         <div class="space-y-4">
@@ -36,10 +35,8 @@
         </div>
     </div>
 
-    <!-- 2. ƏSAS MESSENCER EKRANI -->
     <div id="app-container" class="w-full h-screen flex hidden">
         
-        <!-- Sol Panel -->
         <div class="w-1/3 tg-bg border-r border-[#101921] flex flex-col h-full">
             <div class="p-4 flex justify-between items-center border-b border-[#101921]">
                 <div class="flex items-center space-x-3">
@@ -49,18 +46,7 @@
                 <button onclick="logout()" class="text-gray-400 hover:text-red-500"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
             
-            <!-- Axtarış Bölməsi (İnsanları ancaq buradan tapmaq olar) -->
-            <div class="p-3 border-b border-[#101921]">
-                <div class="relative flex items-center bg-[#24303f] rounded-lg px-3 py-2">
-                    <i class="fas fa-search text-gray-400 mr-2 text-sm"></i>
-                    <input type="text" id="search-input" placeholder="Ad və ya E-poçt ilə dostunu tap..." class="bg-transparent text-sm text-white w-full focus:outline-none">
-                    <button onclick="searchUser()" class="text-xs bg-[#2481cc] px-2 py-1 rounded ml-1">Tap</button>
-                </div>
-            </div>
-            
-            <!-- Çat Siyahısı -->
             <div class="flex-1 overflow-y-auto" id="chats-list">
-                <!-- Qlobal Kömək Qrupu (Sabit) -->
                 <div onclick="startGlobalGroupChat()" class="p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921] bg-[#1a2c3d]">
                     <div class="w-10 h-10 bg-[#e07a5f] rounded-full flex items-center justify-center font-bold text-white"><i class="fas fa-globe"></i></div>
                     <div class="flex-1">
@@ -68,17 +54,15 @@
                         <p class="text-xs text-gray-400 truncate">Hər kəs üçün açıq dəstək otağı</p>
                     </div>
                 </div>
-                <div id="found-chats"></div>
+                <div id="all-users-list"></div>
             </div>
         </div>
 
-        <!-- Sağ Panel -->
         <div class="flex-1 flex flex-col bg-[#0e1621] relative tg-chat-bg">
             <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0e1621] z-20">
-                <p class="bg-[#182533] px-4 py-2 rounded-full text-sm text-gray-400">Yazışmaq üçün bir çat seçin və ya axtarış edin</p>
+                <p class="bg-[#182533] px-4 py-2 rounded-full text-sm text-gray-400">Yazışmaq üçün bir çat seçin</p>
             </div>
 
-            <!-- Çat Başlığı və 3 nöqtə menyusu -->
             <div class="p-4 tg-bg flex items-center justify-between border-b border-[#101921] z-10">
                 <div class="flex items-center">
                     <div id="active-chat-avatar" class="w-10 h-10 bg-[#40a7e3] rounded-full flex items-center justify-center font-bold mr-3">?</div>
@@ -96,10 +80,8 @@
                 </div>
             </div>
 
-            <!-- Mesajlar Sahəsi -->
             <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
 
-            <!-- Cavablama Paneli (Gizli) -->
             <div id="reply-preview" class="px-4 py-2 bg-[#182533] border-l-4 border-[#40a7e3] flex justify-between items-center hidden z-10">
                 <div>
                     <p class="text-xs text-[#40a7e3] font-bold">Cavablandırılır:</p>
@@ -108,7 +90,6 @@
                 <button onclick="cancelReply()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- Mesaj Giriş Paneli -->
             <form id="message-form" onsubmit="sendMessage(event)" class="p-4 tg-bg flex items-center space-x-3 z-10">
                 <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white focus:outline-none">
                 <button type="submit" id="send-btn" class="w-12 h-12 bg-[#2b5278] hover:bg-[#2481cc] rounded-full flex items-center justify-center text-white transition">
@@ -118,7 +99,6 @@
         </div>
     </div>
 
-    <!-- Mesaj üçün Kontekst Menyusu (Silmə / Dəyişmə) -->
     <div id="message-dropdown" class="dropdown-menu w-36">
         <button onclick="triggerEditMessage()"><i class="fas fa-edit mr-2 text-blue-400"></i>Dəyişdir</button>
         <button onclick="deleteMessage()"><i class="fas fa-trash mr-2 text-red-500"></i>Sil</button>
@@ -146,7 +126,7 @@
         let currentUser = null;
         let userData = null;
         let activeChatId = null;
-        let activeChatType = "private"; // 'private' və ya 'global'
+        let activeChatType = "private"; 
         let targetUserData = null;
         let unsubscribeMessages = null;
         
@@ -154,7 +134,6 @@
         let selectedMessageId = null;
         let isEditingMode = false;
 
-        // Form rejimləri keçidi
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Qeydiyyat" : "Tomessenger Pro";
@@ -185,7 +164,6 @@
 
         window.logout = () => signOut(auth);
 
-        // İstifadəçi girişi və Kontaktların yoxlanması
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -198,6 +176,8 @@
                 document.getElementById('my-name').innerText = userData.name;
                 document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
                 
+                // Real-time istifadəçi siyahısını yükləyirik
+                listenUsersList();
                 requestContactsPermission();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
@@ -205,7 +185,7 @@
             }
         });
 
-        // 📱 Kontaktların oxunması (İstifadəçi razılığı ilə)
+        // 📱 Kontaktların oxunması
         async function requestContactsPermission() {
             if ('contacts' in navigator && 'ContactsManager' in window) {
                 try {
@@ -214,59 +194,47 @@
                     if (contacts.length > 0) {
                         syncContactsWithDatabase(contacts);
                     }
-                } catch (err) { console.log("Kontakt icazəsi rədd edildi və ya dəstəklənmir."); }
+                } catch (err) { console.log("Kontakt dəstəklənmir."); }
             }
         }
 
         async function syncContactsWithDatabase(localContacts) {
-            const foundContainer = document.getElementById('found-chats');
             const snapshot = await getDocs(collection(db, "users"));
-            
             localContacts.forEach(local => {
                 const cleanPhone = local.tel ? local.tel[0].replace(/\s+/g, '') : '';
                 snapshot.forEach(docSnap => {
                     const dbUser = docSnap.data();
                     if(dbUser.phone && dbUser.phone === cleanPhone && dbUser.uid !== currentUser.uid) {
-                        appendUserToSidebar(dbUser, "Kontaktlarımdan");
+                        // Kontaktda olanları xüsusi qeyd etmək istəsən istifadə edilə bilər
                     }
                 });
             });
         }
 
-        // 🔍 Axtarış funksiyası (İnsanları tapmaq üçün tək üsul)
-        window.searchUser = async function() {
-            const queryText = document.getElementById('search-input').value.trim().toLowerCase();
-            if(!queryText) return;
+        // Bütün istifadəçiləri canli dinləyən və dublikatın qarşısını alan funksiya
+        function listenUsersList() {
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                const container = document.getElementById('all-users-list');
+                container.innerHTML = ""; // XƏTANIN HƏLLİ: Hər yenilənmədə içini tam sıfırlayırıq ki təkrar adam gəlməsin!
 
-            const snapshot = await getDocs(collection(db, "users"));
-            let found = false;
-            
-            snapshot.forEach(docSnap => {
-                const user = docSnap.data();
-                if(user.uid !== currentUser.uid && (user.name.toLowerCase().includes(queryText) || user.email.toLowerCase() === queryText)) {
-                    appendUserToSidebar(user, "Axtarışdan tapıldı");
-                    found = true;
-                }
+                snapshot.forEach(docSnap => {
+                    const user = docSnap.data();
+                    if(user.uid === currentUser.uid) return; // Özünü siyahıda göstərmə
+
+                    const div = document.createElement('div');
+                    div.id = `sid-${user.uid}`;
+                    div.className = "p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921]";
+                    div.onclick = () => startPrivateChat(user);
+                    div.innerHTML = `
+                        <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold">${user.name.charAt(0).toUpperCase()}</div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-sm">${user.name}</h4>
+                            <p class="text-xs text-gray-400 truncate">Söhbətə başla</p>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
             });
-            if(!found) alert("Heç kim tapılmadı!");
-        }
-
-        function appendUserToSidebar(user, typeText) {
-            const container = document.getElementById('found-chats');
-            if(document.getElementById(`sid-${user.uid}`)) return;
-
-            const div = document.createElement('div');
-            div.id = `sid-${user.uid}`;
-            div.className = "p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921]";
-            div.onclick = () => startPrivateChat(user);
-            div.innerHTML = `
-                <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold">${user.name.charAt(0).toUpperCase()}</div>
-                <div class="flex-1">
-                    <h4 class="font-semibold text-sm">${user.name}</h4>
-                    <p class="text-xs text-[#40a7e3]">${typeText}</p>
-                </div>
-            `;
-            container.appendChild(div);
         }
 
         // Çatın başladılması
@@ -280,7 +248,6 @@
             document.getElementById('active-chat-status').innerText = "şəxsi söhbət";
             document.getElementById('active-chat-avatar').innerText = targetUser.name.charAt(0).toUpperCase();
 
-            // Blok vəziyyətini yoxla
             const isBlocked = userData.blockedUsers && userData.blockedUsers.includes(targetUserData.uid);
             document.getElementById('block-btn').innerHTML = isBlocked ? `<i class="fas fa-unlock mr-2"></i>Blokdan Çıxart` : `<i class="fas fa-ban mr-2"></i>Blokla`;
 
@@ -310,13 +277,11 @@
                     const msg = docSnap.data();
                     const isMe = msg.senderUid === currentUser.uid;
 
-                    // Bloklanmış istifadəçinin mesajını göstərmə (Qlobal qrup üçün)
                     if(userData.blockedUsers && userData.blockedUsers.includes(msg.senderUid)) return;
 
                     const div = document.createElement('div');
                     div.className = `max-w-xs md:max-w-md p-3 shadow-md text-sm cursor-context-menu ${isMe ? 'my-msg' : 'other-msg'}`;
                     
-                    // Sağ klik menyusu və reply düyməsi inteqrasiyası
                     div.oncontextmenu = (e) => openMessageMenu(e, docSnap.id, msg.text, isMe);
                     
                     let replyHTML = "";
@@ -347,20 +312,17 @@
             const text = input.value.trim();
             if(!text) return;
 
-            // Əgər qarşı tərəf bizi bloklayıbsa mesaj getməsin (Şəxsi çatda)
             if(activeChatType === "private" && targetUserData.blockedUsers && targetUserData.blockedUsers.includes(currentUser.uid)) {
                 alert("Bu istifadəçiyə mesaj göndərə bilməzsiniz (Sizi bloklayıb).");
                 return;
             }
 
             if(isEditingMode) {
-                // Mesaj Dəyişdirilməsi (Edit)
                 await updateDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageId), {
                     text: text, isEdited: true
                 });
                 cancelEdit();
             } else {
-                // Yeni Mesaj Göndərilməsi (Reply dəstəkli)
                 let payload = {
                     text: text, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp()
                 };
@@ -374,7 +336,6 @@
             input.value = "";
         }
 
-        // Reply mexanizmi
         window.replyTo = function(id, text) {
             repliedMessageId = id;
             document.getElementById('reply-preview').classList.remove('hidden');
@@ -385,10 +346,9 @@
             document.getElementById('reply-preview').classList.add('hidden');
         }
 
-        // Sağ klik menyusu (Mesaj üçün)
         function openMessageMenu(e, msgId, currentText, isMe) {
             e.preventDefault();
-            if(!isMe) return; // Ancaq öz mesajımızı silib dəyişə bilərik
+            if(!isMe) return; 
             selectedMessageId = msgId;
             window.tempMsgText = currentText;
 
@@ -417,7 +377,6 @@
             }
         }
 
-        // Çatın 3 nöqtə menyusu funksiyaları
         window.toggleChatDropdown = function(e) {
             e.stopPropagation();
             const menu = document.getElementById('chat-dropdown');
@@ -430,10 +389,10 @@
             const idx = blocks.indexOf(targetUserData.uid);
 
             if(idx > -1) {
-                blocks.splice(idx, 1); // Blokdan çıxart
+                blocks.splice(idx, 1);
                 alert("İstifadəçi blokdan çıxarıldı.");
             } else {
-                blocks.push(targetUserData.uid); // Blokla
+                blocks.push(targetUserData.uid);
                 alert("İstifadəçi bloklandı.");
             }
             await updateDoc(doc(db, "users", currentUser.uid), { blockedUsers: blocks });
@@ -449,7 +408,6 @@
                     await deleteDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id));
                 });
                 document.getElementById('no-chat-selected').classList.remove('hidden');
-                document.getElementById(`sid-${targetUserData.uid}`)?.remove();
                 alert("Çat təmizləndi və silindi.");
             }
         }
