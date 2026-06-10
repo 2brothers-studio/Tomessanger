@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v6.0</title>
+    <title>Tomessenger Glass v7.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Maye və Şüşə Effektləri */
         body { 
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
             color: #ffffff; 
@@ -16,7 +15,6 @@
             overflow: hidden;
         }
 
-        /* Arxa fonda hərəkət edən maye kürələr */
         .liquid-bg {
             position: absolute;
             width: 500px;
@@ -24,7 +22,7 @@
             background: linear-gradient(45deg, #4f46e5, #06b6d4);
             filter: blur(80px);
             border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            animate: liquidAnimate 15s infinite alternate ease-in-out;
+            animation: liquidAnimate 15s infinite alternate ease-in-out;
             z-index: 1;
             opacity: 0.4;
         }
@@ -37,7 +35,7 @@
             background: linear-gradient(45deg, #d946ef, #6366f1);
             filter: blur(100px);
             border-radius: 50%;
-            animate: liquidAnimate 20s infinite alternate-reverse ease-in-out;
+            animation: liquidAnimate 20s infinite alternate-reverse ease-in-out;
             z-index: 1;
             opacity: 0.3;
         }
@@ -47,7 +45,6 @@
             100% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; transform: translate(50px, 50px) rotate(360deg); }
         }
 
-        /* Pure Liquid Glassmorphism Paneli */
         .glass-panel {
             background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(20px) saturate(180%);
@@ -68,28 +65,19 @@
             box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
         }
 
-        /* Mesaj Balonları */
         .my-msg { 
             background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(79, 70, 229, 0.25));
             border: 1px solid rgba(255, 255, 255, 0.15);
             align-self: flex-end; 
             border-radius: 16px 16px 0px 16px; 
-            animation: fadeInMsg 0.3s ease-out forward;
         }
         .other-msg { 
             background: rgba(255, 255, 255, 0.07);
             border: 1px solid rgba(255, 255, 255, 0.05);
             align-self: flex-start; 
             border-radius: 16px 16px 16px 0px; 
-            animation: fadeInMsg 0.3s ease-out forward;
         }
 
-        @keyframes fadeInMsg {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Telegram Tipli Mobil Keçid Mexanizmi */
         @media (max-width: 768px) {
             .sidebar-view { width: 100% !important; display: block; }
             .chat-view { width: 100% !important; display: none; position: fixed; inset: 0; z-index: 40; }
@@ -109,7 +97,7 @@
 
     <div id="push-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none w-80"></div>
 
-    <div id="auth-container" class="w-full max-w-md p-8 rounded-2xl glass-panel z-10 transition-all duration-500 transform scale-100">
+    <div id="auth-container" class="w-full max-w-md p-8 rounded-2xl glass-panel z-10">
         <h2 id="auth-title" class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Tomessenger Pro</h2>
         <div class="space-y-4">
             <input type="text" id="auth-name" placeholder="Adınız və Soyadınız" class="w-full p-3 rounded-xl glass-input text-white hidden outline-none">
@@ -117,7 +105,7 @@
             <input type="email" id="auth-email" placeholder="E-poçt ünvanı" class="w-full p-3 rounded-xl glass-input text-white outline-none">
             <input type="password" id="auth-password" placeholder="Şifrə" class="w-full p-3 rounded-xl glass-input text-white outline-none">
             
-            <button id="btn-action" onclick="handleAuth()" class="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all duration-200">Giriş Et</button>
+            <button id="btn-action" onclick="handleAuth()" class="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all">Giriş Et</button>
             
             <p class="text-sm text-center text-gray-400 mt-4">
                 <span id="auth-switch-text">Hesabınız yoxdur?</span>
@@ -131,10 +119,22 @@
         <div id="sidebar-panel" class="sidebar-view w-1/3 glass-panel rounded-2xl flex flex-col h-full overflow-hidden">
             <div class="p-4 flex justify-between items-center border-b border-white/10 bg-white/5">
                 <div class="flex items-center space-x-3">
-                    <div id="my-avatar-txt" class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-full flex items-center justify-center font-bold text-white shadow-md">U</div>
+                    <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="uploadAvatar(event)">
+                    <div id="my-avatar-container" onclick="document.getElementById('avatar-input').click()" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md cursor-pointer overflow-hidden relative group bg-gradient-to-tr from-cyan-500 to-indigo-500">
+                        <img id="my-avatar-img" class="w-full h-full object-cover hidden" src="" alt="">
+                        <span id="my-avatar-txt">U</span>
+                        <div class="absolute inset-0 bg-black/40 items-center justify-center hidden group-hover:flex text-[10px]">Dəyiş</div>
+                    </div>
                     <span class="font-semibold truncate max-w-[140px]" id="my-name">Yüklənir...</span>
                 </div>
                 <button onclick="logout()" class="text-gray-400 hover:text-red-400 transition-colors"><i class="fas fa-sign-out-alt text-lg"></i></button>
+            </div>
+            
+            <div class="p-3 border-b border-white/5">
+                <div class="relative">
+                    <input type="text" id="search-input" oninput="filterUsers()" placeholder="Dostlarını axtar..." class="w-full p-2 pl-9 rounded-xl glass-input text-xs text-white outline-none">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-500 text-xs"></i>
+                </div>
             </div>
             
             <div class="flex-1 overflow-y-auto p-2 space-y-1" id="chats-list">
@@ -157,14 +157,17 @@
             <div class="p-4 bg-white/5 flex items-center justify-between border-b border-white/10 z-10">
                 <div class="flex items-center">
                     <button onclick="backToSidebar()" class="md:hidden mr-3 text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-lg"></i></button>
-                    <div id="active-chat-avatar" class="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center font-bold mr-3 shadow-md text-white">?</div>
+                    <div id="active-chat-avatar-container" class="w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3 shadow-md text-white bg-cyan-500 overflow-hidden">
+                        <img id="active-chat-avatar-img" class="w-full h-full object-cover hidden" src="" alt="">
+                        <span id="active-chat-avatar-txt">?</span>
+                    </div>
                     <div>
                         <h3 class="font-bold text-base text-white" id="active-chat-title">Çat</h3>
                         <p class="text-xs text-cyan-400" id="active-chat-status">Söhbət otağı</p>
                     </div>
                 </div>
                 <div class="relative">
-                    <button onclick="toggleChatDropdown(event)" class="text-gray-400 hover:text-white p-2 transition-transform active:scale-90"><i class="fas fa-ellipsis-v text-lg"></i></button>
+                    <button onclick="toggleChatDropdown(event)" class="text-gray-400 hover:text-white p-2"><i class="fas fa-ellipsis-v text-lg"></i></button>
                     <div id="chat-dropdown" class="dropdown-menu right-0 mt-2 w-48">
                         <button onclick="handleBlockActions()" id="block-btn" class="text-amber-400"><i class="fas fa-ban mr-2"></i>Blokla</button>
                         <button onclick="deleteCurrentChat()" class="text-red-400"><i class="fas fa-trash mr-2"></i>Çatı Sil</button>
@@ -175,10 +178,10 @@
             <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
 
             <div id="ban-overlay" class="p-3 bg-red-500/20 border-t border-red-500/30 backdrop-blur-md text-center text-sm font-bold text-red-300 hidden z-20">
-                ⚠️ Spam səbəbilə 1 saatlıq BAN! Qalan vaxt: <span id="ban-timer">60:00</span>
+                ⚠️ Spam səbəbilə BAN! Qalan vaxt: <span id="ban-timer">60:00</span>
             </div>
 
-            <div id="reply-preview" class="px-4 py-2 bg-white/5 border-l-4 border-cyan-400 flex justify-between items-center hidden z-10 backdrop-blur-md">
+            <div id="reply-preview" class="px-4 py-2 bg-white/5 border-l-4 border-cyan-400 flex justify-between items-center hidden z-10">
                 <div>
                     <p class="text-xs text-cyan-400 font-bold">Cavablandırılır:</p>
                     <p id="reply-preview-text" class="text-xs text-gray-300 truncate max-w-md"></p>
@@ -188,7 +191,7 @@
 
             <form id="message-form" onsubmit="sendMessage(event)" class="p-4 bg-white/5 flex items-center space-x-3 z-10 border-t border-white/10">
                 <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-xl glass-input text-white focus:outline-none">
-                <button type="submit" id="send-btn" class="w-12 h-12 bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 rounded-xl flex items-center justify-center text-white transition-all shadow-md transform active:scale-95">
+                <button type="submit" id="send-btn" class="w-12 h-12 bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 rounded-xl flex items-center justify-center text-white transition-all shadow-md">
                     <i class="fas fa-paper-plane" id="send-icon"></i>
                 </button>
             </form>
@@ -220,7 +223,7 @@
 
         let isSignUpMode = false;
         let currentUser = null;
-        let userData = { name: "", blockedUsers: [], deletedChats: [], banUntil: null };
+        let userData = { name: "", blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "", banUntil: null };
         let activeChatId = null;
         let activeChatType = "private"; 
         let targetUserData = null;
@@ -233,8 +236,8 @@
         let messageTimestamps = [];
         let banEndTime = null;
         let allUsersMap = {};
+        let searchQuery = "";
 
-        // 🛠️ REGISTRASIYA DÜYMƏSİNİN DÜZƏLDİLMƏSİ
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Qeydiyyat" : "Tomessenger Pro";
@@ -251,34 +254,20 @@
             const name = document.getElementById('auth-name').value.trim();
             const phone = document.getElementById('auth-phone').value.trim();
 
-            if(!email || !password) {
-                alert("Zəhmət olmasa email və şifrə sahələrini doldurun!");
-                return;
-            }
+            if(!email || !password) return alert("Məlumatları doldurun!");
 
             try {
                 if (isSignUpMode) {
-                    if(!name) {
-                        alert("Zəhmət olmasa Ad və Soyadınızı qeyd edin!");
-                        return;
-                    }
+                    if(!name) return alert("Ad sahəsini doldurun!");
                     const res = await createUserWithEmailAndPassword(auth, email, password);
-                    
                     await setDoc(doc(db, "users", res.user.uid), {
-                        uid: res.user.uid,
-                        name: name,
-                        email: email,
-                        phone: phone || "",
-                        blockedUsers: [],
-                        deletedChats: [],
-                        banUntil: null
+                        uid: res.user.uid, name: name, email: email, phone: phone || "",
+                        blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "", banUntil: null
                     });
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
-            } catch (e) { 
-                alert("Xəta baş verdi: " + e.message); 
-            }
+            } catch (e) { alert(e.message); }
         }
 
         window.logout = () => signOut(auth);
@@ -286,55 +275,98 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                try {
-                    const d = await getDoc(doc(db, "users", user.uid));
-                    const data = d.data() || {};
-                    userData = {
-                        uid: user.uid,
-                        name: data.name || "İstifadəçi",
-                        email: data.email || "",
-                        phone: data.phone || "",
-                        blockedUsers: data.blockedUsers || [],
-                        deletedChats: data.deletedChats || [],
-                        banUntil: data.banUntil || null
-                    };
-                    
-                    if(userData.banUntil && userData.banUntil > Date.now()) {
-                        activateBanSystem(userData.banUntil);
-                    }
-
-                    document.getElementById('auth-container').classList.add('hidden');
-                    document.getElementById('app-container').classList.remove('hidden');
-                    document.getElementById('my-name').innerText = userData.name;
-                    document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
-                    
-                    loadUsersAndSync();
-                } catch(err) {
-                    console.error("İstifadəçi məlumatı oxunarkən xəta:", err);
+                const d = await getDoc(doc(db, "users", user.uid));
+                const data = d.data() || {};
+                userData = {
+                    uid: user.uid,
+                    name: data.name || "İstifadəçi",
+                    blockedUsers: data.blockedUsers || [],
+                    deletedChats: data.deletedChats || [],
+                    hiddenUsers: data.hiddenUsers || [],
+                    avatarUrl: data.avatarUrl || "",
+                    banUntil: data.banUntil || null
+                };
+                
+                if(userData.banUntil && userData.banUntil > Date.now()) {
+                    activateBanSystem(userData.banUntil);
                 }
+
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('my-name').innerText = userData.name;
+                
+                // Profil şəklini göstər və ya baş hərfini qoy
+                updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
+                
+                loadUsersAndSync();
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
             }
         });
 
-        async function loadUsersAndSync() {
-            try {
-                const usersSnap = await getDocs(collection(db, "users"));
-                allUsersMap = {};
-                usersSnap.forEach(docSnap => {
-                    const u = docSnap.data();
-                    allUsersMap[u.uid] = u;
-                });
+        // 📷 PROFİL ŞƏKLİNİN YÜKLƏNMƏSİ (Base64 ilə verilənlər bazasına qeyd olunur)
+        window.uploadAvatar = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-                onSnapshot(collection(db, "users"), (snapshot) => {
-                    snapshot.forEach(docSnap => {
-                        const u = docSnap.data();
-                        allUsersMap[u.uid] = u;
-                    });
-                    renderSidebarList();
+            const reader = new FileReader();
+            reader.onloadend = async function() {
+                const base64String = reader.result;
+                // Firestore-da istifadəçinin avatar ünvanını yeniləyirik
+                await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: base64String });
+                userData.avatarUrl = base64String;
+                updateAvatarUI('my-avatar-img', 'my-avatar-txt', base64String, userData.name);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function updateAvatarUI(imgId, txtId, url, name) {
+            const imgEl = document.getElementById(imgId);
+            const txtEl = document.getElementById(txtId);
+            if(url) {
+                imgEl.src = url;
+                imgEl.classList.remove('hidden');
+                txtEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                txtEl.innerText = (name || "U").charAt(0).toUpperCase();
+                txtEl.classList.remove('hidden');
+            }
+        }
+
+        async function loadUsersAndSync() {
+            const usersSnap = await getDocs(collection(db, "users"));
+            allUsersMap = {};
+            usersSnap.forEach(docSnap => {
+                const u = docSnap.data();
+                allUsersMap[u.uid] = u;
+            });
+
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    allUsersMap[docSnap.id] = docSnap.data();
                 });
-            } catch(e) { console.log(e); }
+                renderSidebarList();
+            });
+        }
+
+        // 🔍 AXTARIŞ FUNKSİYASI
+        window.filterUsers = function() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            renderSidebarList();
+        }
+
+        // 🗑️ SOL SİYAHIDAN İSTİFADƏÇİNİ SİLMƏK/GİZLƏTMƏK
+        window.hideUserFromList = async function(e, targetUid) {
+            e.stopPropagation(); // Çatın açılmasının qarşısını alır
+            if(confirm("Bu şəxsi siyahınızdan silmək istəyirsiniz?")) {
+                if(!userData.hiddenUsers) userData.hiddenUsers = [];
+                userData.hiddenUsers.push(targetUid);
+                
+                await updateDoc(doc(db, "users", currentUser.uid), { hiddenUsers: userData.hiddenUsers });
+                renderSidebarList();
+            }
         }
 
         function renderSidebarList() {
@@ -344,29 +376,38 @@
             Object.values(allUsersMap).forEach(user => {
                 if(user.uid === currentUser.uid) return;
 
+                // Əgər silinibsə və ya axtarışa uyğun deyilsə siyahıya çıxartma
+                if(userData.hiddenUsers && userData.hiddenUsers.includes(user.uid)) return;
+                if(searchQuery && !user.name.toLowerCase().includes(searchQuery)) return;
+
                 const roomDeterministicId = currentUser.uid < user.uid ? `${currentUser.uid}_${user.uid}` : `${user.uid}_${currentUser.uid}`;
                 if(userData.deletedChats && userData.deletedChats.includes(roomDeterministicId)) return;
 
                 const div = document.createElement('div');
-                div.id = `sid-${user.uid}`;
-                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all border border-transparent hover:border-white/10";
-                
+                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all border border-transparent group relative";
                 div.onclick = () => { startPrivateChat(user); };
 
+                // İstifadəçinin profil şəkli varmı yoxlaması
+                const hasAvatar = user.avatarUrl;
+                const avatarContent = hasAvatar 
+                    ? `<img class="w-full h-full object-cover" src="${user.avatarUrl}">` 
+                    : `<span>${(user.name || "U").charAt(0).toUpperCase()}</span>`;
+
                 div.innerHTML = `
-                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white shadow-md">${(user.name || "U").charAt(0).toUpperCase()}</div>
-                    <div class="flex-1">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white shadow-md overflow-hidden">${avatarContent}</div>
+                    <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center">
-                            <h4 class="font-semibold text-sm text-white">${user.name}</h4>
+                            <h4 class="font-semibold text-sm text-white truncate pr-5">${user.name}</h4>
                             <span id="badge-${user.uid}" class="text-xs text-cyan-400 font-bold"></span>
                         </div>
                         <p class="text-xs text-gray-400 truncate" id="last-msg-${user.uid}">Söhbət açmaq üçün toxunun</p>
                     </div>
+                    <button onclick="hideUserFromList(event, '${user.uid}')" class="absolute right-3 top-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-xs">
+                        <i class="fas fa-times"></i>
+                    </button>
                 `;
                 container.appendChild(div);
             });
-            
-            listenForGlobalNotifications();
         }
 
         window.backToSidebar = function() {
@@ -386,7 +427,8 @@
 
             document.getElementById('active-chat-title').innerText = targetUser.name;
             document.getElementById('active-chat-status').innerText = "şəxsi söhbət";
-            document.getElementById('active-chat-avatar').innerText = (targetUser.name || "?").charAt(0).toUpperCase();
+            
+            updateAvatarUI('active-chat-avatar-img', 'active-chat-avatar-txt', targetUser.avatarUrl, targetUser.name);
 
             const isBlocked = userData.blockedUsers && userData.blockedUsers.includes(targetUserData.uid);
             document.getElementById('block-btn').innerHTML = isBlocked ? `<i class="fas fa-unlock mr-2"></i>Blokdan Çıxart` : `<i class="fas fa-ban mr-2"></i>Blokla`;
@@ -404,7 +446,7 @@
             
             document.getElementById('active-chat-title').innerText = "Ümumdünya Kömək Qrupu";
             document.getElementById('active-chat-status').innerText = "Hər kəs yazıla bilər";
-            document.getElementById('active-chat-avatar').innerHTML = `<i class="fas fa-globe"></i>`;
+            document.getElementById('active-chat-avatar-container').innerHTML = `<i class="fas fa-globe"></i>`;
             listenMessages();
         }
 
@@ -497,46 +539,6 @@
             }, 1000);
         }
 
-        function showPushNotification(sender, text) {
-            const container = document.getElementById('push-container');
-            const toast = document.createElement('div');
-            toast.className = "p-4 glass-panel rounded-xl shadow-2xl pointer-events-auto flex flex-col space-y-1 transition opacity duration-300 border-l-4 border-cyan-400";
-            toast.innerHTML = `
-                <p class="text-xs text-cyan-400 font-bold"><i class="fas fa-bell mr-1"></i> Yeni Mesaj</p>
-                <p class="text-sm font-semibold text-white">${sender}</p>
-                <p class="text-xs text-gray-300 truncate">${text}</p>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
-        }
-
-        function listenForGlobalNotifications() {
-            onSnapshot(collection(db, "rooms"), (snapshot) => {
-                snapshot.docChanges().forEach(change => {
-                    const roomId = change.doc.id;
-                    if(roomId.includes(currentUser.uid) && roomId !== activeChatId) {
-                        if(userData.deletedChats && userData.deletedChats.includes(roomId)) {
-                            userData.deletedChats = userData.deletedChats.filter(id => id !== roomId);
-                            updateDoc(doc(db, "users", currentUser.uid), { deletedChats: userData.deletedChats });
-                            renderSidebarList();
-                        }
-
-                        const subQ = query(collection(db, "rooms", roomId, "messages"), orderBy("timestamp", "desc"));
-                        getDocs(subQ).then(messagesSnap => {
-                            if(!messagesSnap.empty) {
-                                const lastMsg = messagesSnap.docs[0].data();
-                                if(lastMsg.senderUid !== currentUser.uid && lastMsg.status !== "read") {
-                                    showPushNotification(lastMsg.senderName, lastMsg.text);
-                                    const el = document.getElementById(`last-msg-${lastMsg.senderUid}`);
-                                    if(el) el.innerText = lastMsg.text;
-                                }
-                            }
-                        });
-                    }
-                });
-            });
-        }
-
         window.sendMessage = async function(e) {
             e.preventDefault();
             const input = document.getElementById('msg-input');
@@ -546,7 +548,7 @@
             if(!checkSpamProtection()) return;
 
             if(activeChatType === "private" && targetUserData && targetUserData.blockedUsers && targetUserData.blockedUsers.includes(currentUser.uid)) {
-                alert("Bu istifadəçiyə mesaj göndərə bilməzsiniz (Sizi bloklayıb).");
+                alert("Bu istifadəçiyə mesaj göndərə bilməzsiniz.");
                 return;
             }
 
@@ -628,7 +630,7 @@
             if(activeChatType === "global") return alert("Qlobal qrupu silə bilməzsiniz!");
             if(!activeChatId) return;
 
-            if(confirm("Bu çatı və bütün mesajları silmək istədiyinizdən əminsiniz?")) {
+            if(confirm("Bu çatı silmək istəyirsiniz?")) {
                 const snapshot = await getDocs(collection(db, "rooms", activeChatId, "messages"));
                 snapshot.forEach(async (docSnap) => {
                     await deleteDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id));
@@ -641,7 +643,6 @@
                 document.getElementById('no-chat-selected').classList.remove('hidden');
                 backToSidebar();
                 renderSidebarList();
-                alert("Çat tamamilə silindi!");
             }
         }
 
