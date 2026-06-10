@@ -3,119 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Pro v5.2</title>
+    <title>Tomessenger Glass v6.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0e1621; color: #ffffff; font-family: sans-serif; user-select: none; }
-        .tg-bg { background-color: #17212b; }
-        .tg-active { background-color: #2b5278; }
-        .tg-chat-bg { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); opacity: 0.95; }
-        .my-msg { background-color: #2b5278; align-self: flex-end; border-radius: 12px 12px 0px 12px; position: relative; }
-        .other-msg { background-color: #182533; align-self: flex-start; border-radius: 12px 12px 12px 0px; position: relative; }
-        .dropdown-menu { display: none; position: absolute; background-color: #17212b; border: 1px solid #101921; z-index: 100; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); }
-        .dropdown-menu button { width: 100%; text-align: left; padding: 8px 16px; font-size: 13px; }
-        .dropdown-menu button:hover { background-color: #24303f; }
-        
+        /* Maye və Şüşə Effektləri */
+        body { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* Arxa fonda hərəkət edən maye kürələr */
+        .liquid-bg {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, #4f46e5, #06b6d4);
+            filter: blur(80px);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            animate: liquidAnimate 15s infinite alternate ease-in-out;
+            z-index: 1;
+            opacity: 0.4;
+        }
+        .liquid-bg-2 {
+            position: absolute;
+            right: 10%;
+            bottom: 10%;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(45deg, #d946ef, #6366f1);
+            filter: blur(100px);
+            border-radius: 50%;
+            animate: liquidAnimate 20s infinite alternate-reverse ease-in-out;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        @keyframes liquidAnimate {
+            0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: translate(0, 0) rotate(0deg); }
+            100% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; transform: translate(50px, 50px) rotate(360deg); }
+        }
+
+        /* Pure Liquid Glassmorphism Paneli */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #06b6d4;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Mesaj Balonları */
+        .my-msg { 
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(79, 70, 229, 0.25));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            align-self: flex-end; 
+            border-radius: 16px 16px 0px 16px; 
+            animation: fadeInMsg 0.3s ease-out forward;
+        }
+        .other-msg { 
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            align-self: flex-start; 
+            border-radius: 16px 16px 16px 0px; 
+            animation: fadeInMsg 0.3s ease-out forward;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Telegram Tipli Mobil Keçid Mexanizmi */
         @media (max-width: 768px) {
             .sidebar-view { width: 100% !important; display: block; }
             .chat-view { width: 100% !important; display: none; position: fixed; inset: 0; z-index: 40; }
             .chat-view.active { display: flex !important; }
             .sidebar-view.hidden-mob { display: none !important; }
         }
+
+        .dropdown-menu { display: none; position: absolute; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100; border-radius: 12px; }
+        .dropdown-menu button { width: 100%; text-align: left; padding: 10px 18px; font-size: 13px; transition: background 0.2s; }
+        .dropdown-menu button:hover { background: rgba(255,255,255,0.1); }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center overflow-hidden" onclick="closeAllDropdowns()">
+<body class="h-screen flex items-center justify-center relative overflow-hidden" onclick="closeAllDropdowns()">
+
+    <div class="liquid-bg"></div>
+    <div class="liquid-bg-2"></div>
 
     <div id="push-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none w-80"></div>
 
-    <div id="auth-container" class="w-full max-w-md p-8 rounded-lg tg-bg shadow-lg z-10">
-        <h2 id="auth-title" class="text-2xl font-bold text-center mb-6">Tomessenger Pro</h2>
+    <div id="auth-container" class="w-full max-w-md p-8 rounded-2xl glass-panel z-10 transition-all duration-500 transform scale-100">
+        <h2 id="auth-title" class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Tomessenger Pro</h2>
         <div class="space-y-4">
-            <input type="text" id="auth-name" placeholder="Adınız və Soyadınız" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 text-white hidden">
-            <input type="text" id="auth-phone" placeholder="Telefon nömrəniz" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 text-white hidden">
-            <input type="email" id="auth-email" placeholder="E-poçt ünvanı" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 text-white">
-            <input type="password" id="auth-password" placeholder="Şifrə" class="w-full p-3 rounded bg-[#24303f] border border-gray-700 text-white">
-            <button id="btn-action" onclick="handleAuth()" class="w-full bg-[#2481cc] text-white p-3 rounded font-semibold">Giriş Et</button>
+            <input type="text" id="auth-name" placeholder="Adınız və Soyadınız" class="w-full p-3 rounded-xl glass-input text-white hidden outline-none">
+            <input type="text" id="auth-phone" placeholder="Telefon nömrəniz" class="w-full p-3 rounded-xl glass-input text-white hidden outline-none">
+            <input type="email" id="auth-email" placeholder="E-poçt ünvanı" class="w-full p-3 rounded-xl glass-input text-white outline-none">
+            <input type="password" id="auth-password" placeholder="Şifrə" class="w-full p-3 rounded-xl glass-input text-white outline-none">
+            
+            <button id="btn-action" onclick="handleAuth()" class="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all duration-200">Giriş Et</button>
+            
             <p class="text-sm text-center text-gray-400 mt-4">
                 <span id="auth-switch-text">Hesabınız yoxdur?</span>
-                <button onclick="toggleAuthMode()" id="btn-switch" class="text-[#40a7e3] underline ml-1">Qeydiyyatdan keçin</button>
+                <button onclick="toggleAuthMode()" id="btn-switch" class="text-cyan-400 underline ml-1 font-semibold">Qeydiyyatdan keçin</button>
             </p>
         </div>
     </div>
 
-    <div id="app-container" class="w-full h-screen flex hidden">
+    <div id="app-container" class="w-full h-screen flex hidden z-10 p-2 md:p-4 space-x-4">
         
-        <div id="sidebar-panel" class="sidebar-view w-1/3 tg-bg border-r border-[#101921] flex flex-col h-full">
-            <div class="p-4 flex justify-between items-center border-b border-[#101921]">
+        <div id="sidebar-panel" class="sidebar-view w-1/3 glass-panel rounded-2xl flex flex-col h-full overflow-hidden">
+            <div class="p-4 flex justify-between items-center border-b border-white/10 bg-white/5">
                 <div class="flex items-center space-x-3">
-                    <div id="my-avatar-txt" class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold">U</div>
-                    <span class="font-medium truncate max-w-[120px]" id="my-name">Yüklənir...</span>
+                    <div id="my-avatar-txt" class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-full flex items-center justify-center font-bold text-white shadow-md">U</div>
+                    <span class="font-semibold truncate max-w-[140px]" id="my-name">Yüklənir...</span>
                 </div>
-                <button onclick="logout()" class="text-gray-400 hover:text-red-500"><i class="fas fa-sign-out-alt text-lg"></i></button>
+                <button onclick="logout()" class="text-gray-400 hover:text-red-400 transition-colors"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
             
-            <div class="flex-1 overflow-y-auto" id="chats-list">
-                <div onclick="startGlobalGroupChat()" class="p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921] bg-[#1a2c3d]">
-                    <div class="w-10 h-10 bg-[#e07a5f] rounded-full flex items-center justify-center font-bold text-white"><i class="fas fa-globe"></i></div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-1" id="chats-list">
+                <div onclick="startGlobalGroupChat()" class="p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all bg-white/5 border border-white/10">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-pink-500 to-orange-400 rounded-full flex items-center justify-center font-bold text-white shadow-sm"><i class="fas fa-globe"></i></div>
                     <div class="flex-1">
                         <h4 class="font-bold text-sm text-white">Ümumdünya Kömək Qrupu</h4>
-                        <p class="text-xs text-gray-400 truncate">Açıq dəstək otağı</p>
+                        <p class="text-xs text-cyan-300 truncate">Açıq dəstək otağı</p>
                     </div>
                 </div>
-                <div id="all-users-list"></div>
+                <div id="all-users-list" class="space-y-1"></div>
             </div>
         </div>
 
-        <div id="chat-panel" class="chat-view flex-1 flex flex-col bg-[#0e1621] relative tg-chat-bg">
-            <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0e1621] z-20 flex">
-                <p class="bg-[#182533] px-4 py-2 rounded-full text-sm text-gray-400">Yazışmaq üçün bir çat seçin</p>
+        <div id="chat-panel" class="chat-view flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden relative">
+            <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0f172abf] backdrop-blur-md z-20">
+                <p class="bg-white/10 px-5 py-2.5 rounded-full text-sm text-gray-300 border border-white/10 shadow-lg"><i class="far fa-comments mr-2 text-cyan-400"></i>Söhbətə başlamaq üçün çat seçin</p>
             </div>
 
-            <div class="p-4 tg-bg flex items-center justify-between border-b border-[#101921] z-10">
+            <div class="p-4 bg-white/5 flex items-center justify-between border-b border-white/10 z-10">
                 <div class="flex items-center">
                     <button onclick="backToSidebar()" class="md:hidden mr-3 text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-lg"></i></button>
-                    <div id="active-chat-avatar" class="w-10 h-10 bg-[#40a7e3] rounded-full flex items-center justify-center font-bold mr-3">?</div>
+                    <div id="active-chat-avatar" class="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center font-bold mr-3 shadow-md text-white">?</div>
                     <div>
-                        <h3 class="font-bold text-base" id="active-chat-title">Çat</h3>
-                        <p class="text-xs text-gray-400" id="active-chat-status">Söhbət otağı</p>
+                        <h3 class="font-bold text-base text-white" id="active-chat-title">Çat</h3>
+                        <p class="text-xs text-cyan-400" id="active-chat-status">Söhbət otağı</p>
                     </div>
                 </div>
                 <div class="relative">
-                    <button onclick="toggleChatDropdown(event)" class="text-gray-400 hover:text-white p-2"><i class="fas fa-ellipsis-v text-lg"></i></button>
+                    <button onclick="toggleChatDropdown(event)" class="text-gray-400 hover:text-white p-2 transition-transform active:scale-90"><i class="fas fa-ellipsis-v text-lg"></i></button>
                     <div id="chat-dropdown" class="dropdown-menu right-0 mt-2 w-48">
-                        <button onclick="handleBlockActions()" id="block-btn" class="text-yellow-500"><i class="fas fa-ban mr-2"></i>Blokla</button>
-                        <button onclick="deleteCurrentChat()" class="text-red-500"><i class="fas fa-trash mr-2"></i>Çatı Sil</button>
+                        <button onclick="handleBlockActions()" id="block-btn" class="text-amber-400"><i class="fas fa-ban mr-2"></i>Blokla</button>
+                        <button onclick="deleteCurrentChat()" class="text-red-400"><i class="fas fa-trash mr-2"></i>Çatı Sil</button>
                     </div>
                 </div>
             </div>
 
             <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-3 z-10"></div>
 
-            <div id="ban-overlay" class="p-3 bg-red-900 bg-opacity-80 text-center text-sm font-bold text-white hidden z-20">
-                ⚠️ Spam etdiyiniz üçün 1 saatlıq BAN olundunuz! Qalan vaxt: <span id="ban-timer">60:00</span>
+            <div id="ban-overlay" class="p-3 bg-red-500/20 border-t border-red-500/30 backdrop-blur-md text-center text-sm font-bold text-red-300 hidden z-20">
+                ⚠️ Spam səbəbilə 1 saatlıq BAN! Qalan vaxt: <span id="ban-timer">60:00</span>
             </div>
 
-            <div id="reply-preview" class="px-4 py-2 bg-[#182533] border-l-4 border-[#40a7e3] flex justify-between items-center hidden z-10">
+            <div id="reply-preview" class="px-4 py-2 bg-white/5 border-l-4 border-cyan-400 flex justify-between items-center hidden z-10 backdrop-blur-md">
                 <div>
-                    <p class="text-xs text-[#40a7e3] font-bold">Cavablandırılır:</p>
-                    <p id="reply-preview-text" class="text-xs text-gray-400 truncate max-w-md"></p>
+                    <p class="text-xs text-cyan-400 font-bold">Cavablandırılır:</p>
+                    <p id="reply-preview-text" class="text-xs text-gray-300 truncate max-w-md"></p>
                 </div>
                 <button onclick="cancelReply()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
 
-            <form id="message-form" onsubmit="sendMessage(event)" class="p-4 tg-bg flex items-center space-x-3 z-10">
-                <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-lg bg-[#24303f] text-white focus:outline-none">
-                <button type="submit" id="send-btn" class="w-12 h-12 bg-[#2b5278] hover:bg-[#2481cc] rounded-full flex items-center justify-center text-white transition">
+            <form id="message-form" onsubmit="sendMessage(event)" class="p-4 bg-white/5 flex items-center space-x-3 z-10 border-t border-white/10">
+                <input type="text" id="msg-input" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-xl glass-input text-white focus:outline-none">
+                <button type="submit" id="send-btn" class="w-12 h-12 bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 rounded-xl flex items-center justify-center text-white transition-all shadow-md transform active:scale-95">
                     <i class="fas fa-paper-plane" id="send-icon"></i>
                 </button>
             </form>
         </div>
     </div>
 
-    <div id="message-dropdown" class="dropdown-menu w-36">
-        <button onclick="triggerEditMessage()"><i class="fas fa-edit mr-2 text-blue-400"></i>Dəyişdir</button>
-        <button onclick="deleteMessage()"><i class="fas fa-trash mr-2 text-red-500"></i>Sil</button>
+    <div id="message-dropdown" class="dropdown-menu w-36 shadow-2xl">
+        <button onclick="triggerEditMessage()"><i class="fas fa-edit mr-2 text-cyan-400"></i>Dəyişdir</button>
+        <button onclick="deleteMessage()"><i class="fas fa-trash mr-2 text-red-400"></i>Sil</button>
     </div>
 
     <script type="module">
@@ -152,29 +234,36 @@
         let banEndTime = null;
         let allUsersMap = {};
 
+        // 🛠️ REGISTRASIYA DÜYMƏSİNİN DÜZƏLDİLMƏSİ
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Qeydiyyat" : "Tomessenger Pro";
             document.getElementById('auth-name').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('auth-phone').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('btn-action').innerText = isSignUpMode ? "Qeydiyyatı Tamamla" : "Giriş Et";
+            document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Hesabınız var?" : "Hesabınız yoxdur?";
+            document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
         }
 
-        // QEYDİYYAT XƏTASININ HƏLLİ: Boş verilənlər Firebase üçün təhlükəsiz formata salındı
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
             const name = document.getElementById('auth-name').value.trim();
             const phone = document.getElementById('auth-phone').value.trim();
 
-            if(!email || !password) return alert("Məlumatları doldurun!");
+            if(!email || !password) {
+                alert("Zəhmət olmasa email və şifrə sahələrini doldurun!");
+                return;
+            }
 
             try {
                 if (isSignUpMode) {
-                    if(!name) return alert("Zəhmət olmasa adınızı daxil edin!");
+                    if(!name) {
+                        alert("Zəhmət olmasa Ad və Soyadınızı qeyd edin!");
+                        return;
+                    }
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     
-                    // Struktur tam sadələşdirildi ki Firebase rədd etməsin
                     await setDoc(doc(db, "users", res.user.uid), {
                         uid: res.user.uid,
                         name: name,
@@ -187,7 +276,9 @@
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
-            } catch (e) { alert(e.message); }
+            } catch (e) { 
+                alert("Xəta baş verdi: " + e.message); 
+            }
         }
 
         window.logout = () => signOut(auth);
@@ -195,30 +286,32 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                const d = await getDoc(doc(db, "users", user.uid));
-                
-                // Əgər bazadan gələn məlumatda massivlər yoxdursa avtomatik təyin et (Crash-ın qarşısını alır)
-                const data = d.data() || {};
-                userData = {
-                    uid: user.uid,
-                    name: data.name || "İstifadəçi",
-                    email: data.email || "",
-                    phone: data.phone || "",
-                    blockedUsers: data.blockedUsers || [],
-                    deletedChats: data.deletedChats || [],
-                    banUntil: data.banUntil || null
-                };
-                
-                if(userData.banUntil && userData.banUntil > Date.now()) {
-                    activateBanSystem(userData.banUntil);
-                }
+                try {
+                    const d = await getDoc(doc(db, "users", user.uid));
+                    const data = d.data() || {};
+                    userData = {
+                        uid: user.uid,
+                        name: data.name || "İstifadəçi",
+                        email: data.email || "",
+                        phone: data.phone || "",
+                        blockedUsers: data.blockedUsers || [],
+                        deletedChats: data.deletedChats || [],
+                        banUntil: data.banUntil || null
+                    };
+                    
+                    if(userData.banUntil && userData.banUntil > Date.now()) {
+                        activateBanSystem(userData.banUntil);
+                    }
 
-                document.getElementById('auth-container').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
-                document.getElementById('my-name').innerText = userData.name;
-                document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
-                
-                loadUsersAndSync();
+                    document.getElementById('auth-container').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
+                    document.getElementById('my-name').innerText = userData.name;
+                    document.getElementById('my-avatar-txt').innerText = userData.name.charAt(0).toUpperCase();
+                    
+                    loadUsersAndSync();
+                } catch(err) {
+                    console.error("İstifadəçi məlumatı oxunarkən xəta:", err);
+                }
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
@@ -226,20 +319,22 @@
         });
 
         async function loadUsersAndSync() {
-            const usersSnap = await getDocs(collection(db, "users"));
-            allUsersMap = {}; // Keşi sıfırla
-            usersSnap.forEach(docSnap => {
-                const u = docSnap.data();
-                allUsersMap[u.uid] = u;
-            });
-
-            onSnapshot(collection(db, "users"), (snapshot) => {
-                snapshot.forEach(docSnap => {
+            try {
+                const usersSnap = await getDocs(collection(db, "users"));
+                allUsersMap = {};
+                usersSnap.forEach(docSnap => {
                     const u = docSnap.data();
-                    allUsersMap[u.uid] = u; // Yeni qeydiyyatdan keçənləri də xəritəyə daxil et
+                    allUsersMap[u.uid] = u;
                 });
-                renderSidebarList();
-            });
+
+                onSnapshot(collection(db, "users"), (snapshot) => {
+                    snapshot.forEach(docSnap => {
+                        const u = docSnap.data();
+                        allUsersMap[u.uid] = u;
+                    });
+                    renderSidebarList();
+                });
+            } catch(e) { console.log(e); }
         }
 
         function renderSidebarList() {
@@ -254,20 +349,18 @@
 
                 const div = document.createElement('div');
                 div.id = `sid-${user.uid}`;
-                div.className = "p-3 flex items-center space-x-3 hover:bg-[#24303f] cursor-pointer border-b border-[#101921]";
+                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all border border-transparent hover:border-white/10";
                 
-                div.onclick = () => {
-                    startPrivateChat(user);
-                };
+                div.onclick = () => { startPrivateChat(user); };
 
                 div.innerHTML = `
-                    <div class="w-10 h-10 bg-[#2b5278] rounded-full flex items-center justify-center font-bold text-white">${(user.name || "U").charAt(0).toUpperCase()}</div>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white shadow-md">${(user.name || "U").charAt(0).toUpperCase()}</div>
                     <div class="flex-1">
                         <div class="flex justify-between items-center">
                             <h4 class="font-semibold text-sm text-white">${user.name}</h4>
-                            <span id="badge-${user.uid}" class="text-xs text-blue-400 font-bold"></span>
+                            <span id="badge-${user.uid}" class="text-xs text-cyan-400 font-bold"></span>
                         </div>
-                        <p class="text-xs text-gray-400 truncate" id="last-msg-${user.uid}">Söhbət etmək üçün klikləyin</p>
+                        <p class="text-xs text-gray-400 truncate" id="last-msg-${user.uid}">Söhbət açmaq üçün toxunun</p>
                     </div>
                 `;
                 container.appendChild(div);
@@ -336,29 +429,29 @@
                     }
 
                     const div = document.createElement('div');
-                    div.className = `max-w-xs md:max-w-md p-3 shadow-md text-sm cursor-context-menu ${isMe ? 'my-msg' : 'other-msg'}`;
+                    div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm cursor-context-menu ${isMe ? 'my-msg' : 'other-msg'}`;
                     div.oncontextmenu = (e) => openMessageMenu(e, docSnap.id, msg.text, isMe);
                     
                     let replyHTML = "";
                     if(msg.replyToText) {
-                        replyHTML = `<div class="bg-black bg-opacity-20 p-2 rounded text-xs mb-1 border-l-2 border-white opacity-70 italic truncate">${msg.replyToText}</div>`;
+                        replyHTML = `<div class="bg-black/30 p-2 rounded-lg text-xs mb-1 border-l-2 border-cyan-400 opacity-80 italic truncate">${msg.replyToText}</div>`;
                     }
 
                     let ticks = "";
                     if(isMe) {
                         ticks = msg.status === "read" 
-                            ? `<span class="text-blue-400 ml-2 text-[11px] font-bold"><i class="fas fa-check-double"></i></span>` 
+                            ? `<span class="text-cyan-400 ml-2 text-[11px] font-bold"><i class="fas fa-check-double"></i></span>` 
                             : `<span class="text-gray-400 ml-2 text-[11px]"><i class="fas fa-check"></i></span>`;
                     }
 
                     div.innerHTML = `
                         <div class="flex justify-between items-center space-x-4">
-                            <span class="text-[11px] text-[#40a7e3] font-bold">${isMe ? "Sən" : msg.senderName}</span>
+                            <span class="text-[11px] text-cyan-400 font-bold">${isMe ? "Sən" : msg.senderName}</span>
                             <button onclick="replyTo('${docSnap.id}', '${msg.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-white text-xs"><i class="fas fa-reply"></i></button>
                         </div>
                         ${replyHTML}
                         <p class="break-words mt-1 flex justify-between items-end">
-                            <span>${msg.text} ${msg.isEdited ? '<span class="text-[9px] text-gray-400 ml-1">(edit)</span>' : ''}</span>
+                            <span>${msg.text} ${msg.isEdited ? '<span class="text-[9px] text-gray-500 ml-1">(edit)</span>' : ''}</span>
                             ${ticks}
                         </p>
                     `;
@@ -407,9 +500,9 @@
         function showPushNotification(sender, text) {
             const container = document.getElementById('push-container');
             const toast = document.createElement('div');
-            toast.className = "p-4 bg-[#17212b] border-l-4 border-blue-500 rounded shadow-2xl pointer-events-auto flex flex-col space-y-1 transition opacity duration-300";
+            toast.className = "p-4 glass-panel rounded-xl shadow-2xl pointer-events-auto flex flex-col space-y-1 transition opacity duration-300 border-l-4 border-cyan-400";
             toast.innerHTML = `
-                <p class="text-xs text-blue-400 font-bold"><i class="fas fa-bell mr-1"></i> Yeni Mesaj</p>
+                <p class="text-xs text-cyan-400 font-bold"><i class="fas fa-bell mr-1"></i> Yeni Mesaj</p>
                 <p class="text-sm font-semibold text-white">${sender}</p>
                 <p class="text-xs text-gray-300 truncate">${text}</p>
             `;
@@ -522,4 +615,40 @@
         window.handleBlockActions = async function() {
             if(!targetUserData) return;
             let blocks = userData.blockedUsers || [];
-            const idx =
+            const idx = blocks.indexOf(targetUserData.uid);
+            if(idx > -1) blocks.splice(idx, 1);
+            else blocks.push(targetUserData.uid);
+            
+            await updateDoc(doc(db, "users", currentUser.uid), { blockedUsers: blocks });
+            userData.blockedUsers = blocks;
+            startPrivateChat(targetUserData);
+        }
+
+        window.deleteCurrentChat = async function() {
+            if(activeChatType === "global") return alert("Qlobal qrupu silə bilməzsiniz!");
+            if(!activeChatId) return;
+
+            if(confirm("Bu çatı və bütün mesajları silmək istədiyinizdən əminsiniz?")) {
+                const snapshot = await getDocs(collection(db, "rooms", activeChatId, "messages"));
+                snapshot.forEach(async (docSnap) => {
+                    await deleteDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id));
+                });
+
+                if(!userData.deletedChats) userData.deletedChats = [];
+                userData.deletedChats.push(activeChatId);
+                await updateDoc(doc(db, "users", currentUser.uid), { deletedChats: userData.deletedChats });
+
+                document.getElementById('no-chat-selected').classList.remove('hidden');
+                backToSidebar();
+                renderSidebarList();
+                alert("Çat tamamilə silindi!");
+            }
+        }
+
+        window.closeAllDropdowns = function() {
+            document.getElementById('message-dropdown').style.display = 'none';
+            document.getElementById('chat-dropdown').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
