@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v9.0 Pro</title>
+    <title>Tomessenger Glass v9.2 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -76,8 +76,7 @@
     <div class="liquid-bg"></div>
     <div class="liquid-bg-2"></div>
 
-    <div id="push-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none w-80"></div>
-
+    <!-- REAKSİYA MENYUSU -->
     <div id="reaction-popup" class="reaction-bar flex shadow-2xl">
         <button onclick="sendReaction('👍')" class="hover:scale-130 transition-transform text-lg">👍</button>
         <button onclick="sendReaction('❤️')" class="hover:scale-130 transition-transform text-lg">❤️</button>
@@ -85,6 +84,7 @@
         <button onclick="sendReaction('😮')" class="hover:scale-130 transition-transform text-lg">😮</button>
     </div>
 
+    <!-- GİRİŞ VƏ QEYDİYYAT -->
     <div id="auth-container" class="w-full max-w-md p-8 rounded-2xl glass-panel z-10">
         <h2 id="auth-title" class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Tomessenger Pro</h2>
         <div class="space-y-4">
@@ -102,8 +102,10 @@
         </div>
     </div>
 
+    <!-- ƏSAS MESSENCER INTERFEYSİ -->
     <div id="app-container" class="w-full h-screen flex hidden z-10 p-2 md:p-4 space-x-4">
         
+        <!-- Sol Panel -->
         <div id="sidebar-panel" class="sidebar-view w-1/3 glass-panel rounded-2xl flex flex-col h-full overflow-hidden">
             <div class="p-4 flex justify-between items-center border-b border-white/10 bg-white/5">
                 <div class="flex items-center space-x-3">
@@ -118,6 +120,7 @@
                 <button onclick="logout()" class="text-gray-400 hover:text-red-400 transition-colors"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
             
+            <!-- Axtarış Paneli -->
             <div class="p-3 border-b border-white/5">
                 <div class="relative">
                     <input type="text" id="search-input" oninput="filterUsers()" placeholder="Dostlarını axtar..." class="w-full p-2 pl-9 rounded-xl glass-input text-xs text-white outline-none">
@@ -137,11 +140,13 @@
             </div>
         </div>
 
+        <!-- Sağ Panel -->
         <div id="chat-panel" class="chat-view flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden relative">
             <div id="no-chat-selected" class="absolute inset-0 flex items-center justify-center bg-[#0f172abf] backdrop-blur-md z-20">
                 <p class="bg-white/10 px-5 py-2.5 rounded-full text-sm text-gray-300 border border-white/10 shadow-lg"><i class="far fa-comments mr-2 text-cyan-400"></i>Söhbətə başlamaq üçün çat seçin</p>
             </div>
 
+            <!-- Çat Başlığı -->
             <div class="p-4 bg-white/5 flex items-center justify-between border-b border-white/10 z-10">
                 <div class="flex items-center">
                     <button onclick="backToSidebar()" class="md:hidden mr-3 text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-lg"></i></button>
@@ -156,10 +161,11 @@
                 </div>
             </div>
 
+            <!-- Mesaj Axını -->
             <div id="messages-container" class="flex-1 p-6 overflow-y-auto flex flex-col space-y-4 z-10"></div>
 
+            <!-- Mesaj Girişi Panelı -->
             <form id="message-form" onsubmit="sendMessage(event)" class="p-4 bg-white/5 flex items-center space-x-2 z-10 border-t border-white/10">
-                
                 <input type="file" id="chat-file-input" class="hidden" onchange="handleChatFileSelect(event)">
                 <button type="button" onclick="document.getElementById('chat-file-input').click()" class="w-11 h-11 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-cyan-400 rounded-xl flex items-center justify-center border border-white/10 transition-all">
                     <i class="fas fa-paperclip text-lg"></i>
@@ -167,7 +173,7 @@
 
                 <input type="text" id="msg-input" oninput="notifyTyping()" placeholder="Mesaj yazın..." autocomplete="off" class="flex-1 p-3 rounded-xl glass-input text-white focus:outline-none">
                 
-                <button type="button" id="voice-btn" onclick="toggleVoiceRecord()" class="w-11 h-11 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-red-400 rounded-xl flex items-center justify-center border border-white/10 transition-all" title="Səsli Mesaj">
+                <button type="button" id="voice-btn" onclick="toggleVoiceRecord()" class="w-11 h-11 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-red-400 rounded-xl flex items-center justify-center border border-white/10 transition-all">
                     <i class="fas fa-microphone text-lg" id="voice-icon"></i>
                 </button>
 
@@ -208,7 +214,6 @@
         let searchQuery = "";
         let typingTimeout = null;
         
-        // Səs yazma dəyişənləri
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
@@ -224,26 +229,43 @@
             document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
         }
 
+        // 🛠️ YENİLƏNMİŞ LOQİN VƏ QEYDİYYAT FUNKSİYASI (Tam sinxron)
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
             const name = document.getElementById('auth-name').value.trim();
             const phone = document.getElementById('auth-phone').value.trim();
 
-            if(!email || !password) return alert("Sahələri doldurun!");
+            if(!email || !password) return alert("Sahələri tam doldurun!");
 
             try {
                 if (isSignUpMode) {
-                    if(!name) return alert("Ad yazın!");
+                    if(!name) return alert("Zəhmət olmasa adınızı yazın!");
+                    
+                    // 1. İstifadəçi Auth sistemində yaradılır
                     const res = await createUserWithEmailAndPassword(auth, email, password);
+                    
+                    // 2. Məlumatlar dərhal bazaya (Firestore) yazılır
                     await setDoc(doc(db, "users", res.user.uid), {
-                        uid: res.user.uid, name: name, email: email, phone: phone || "",
-                        blockedUsers: [], deletedChats: [], hiddenUsers: [], avatarUrl: "", status: "online"
+                        uid: res.user.uid, 
+                        name: name, 
+                        email: email, 
+                        phone: phone || "",
+                        blockedUsers: [], 
+                        deletedChats: [], 
+                        hiddenUsers: [], 
+                        avatarUrl: "", 
+                        status: "online"
                     });
+                    
                 } else {
-                    await signInWithEmailAndPassword(auth, email, password);
+                    // Giriş prosesi
+                    const res = await signInWithEmailAndPassword(auth, email, password);
+                    await updateDoc(doc(db, "users", res.user.uid), { status: "online" });
                 }
-            } catch (e) { alert(e.message); }
+            } catch (e) { 
+                alert("Xəta baş verdi: " + e.message); 
+            }
         }
 
         window.logout = async () => {
@@ -258,22 +280,27 @@
             }
         }
 
+        // 🔄 REAL VAXTDA STATUSU TUTAN FUNKSİYA (Avtomatik yönləndirmə bura bağlıdır)
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                await updateDoc(doc(db, "users", user.uid), { status: "online" });
                 
+                // İstifadəçi məlumatlarını Firestore-dan real vaxtda dinləyirik
                 onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-                    const data = docSnap.data() || {};
-                    userData = { ...userData, ...data };
-                    document.getElementById('my-name').innerText = userData.name;
-                    updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
+                    if(docSnap.exists()) {
+                        const data = docSnap.data() || {};
+                        userData = { ...userData, ...data };
+                        document.getElementById('my-name').innerText = userData.name;
+                        updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
+                    }
                 });
 
+                // Ekranları dəyişdiririk (Giriş paneli gizlənir, proqram açılır)
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 loadUsersAndSync();
             } else {
+                // Çıxış edilibsə giriş paneli geri gəlir
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
             }
@@ -365,7 +392,6 @@
             typingTimeout = setTimeout(() => { updateDoc(doc(db, "users", currentUser.uid), { typingTo: null }); }, 2000);
         }
 
-        // 📎 LOCAL FAYL SİSTEMİ (Maks 1GB, Serverə getmir)
         window.handleChatFileSelect = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -380,11 +406,9 @@
             sendMediaMessage(fileUrl, file.name, fileType);
         }
 
-        // 🎤 LOKAL SƏS YAZMA SİSTEMİ (Server Yaddaşı Tutmur)
         window.toggleVoiceRecord = async function() {
             const icon = document.getElementById('voice-icon');
             if (!isRecording) {
-                // Səs yazmanı başlat
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
@@ -400,7 +424,6 @@
                 isRecording = true;
                 icon.className = "fas fa-stop text-red-500 animate-pulse";
             } else {
-                // Səs yazmanı dayandır
                 mediaRecorder.stop();
                 isRecording = false;
                 icon.className = "fas fa-microphone text-lg";
@@ -452,7 +475,6 @@
                     const div = document.createElement('div');
                     div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm relative cursor-pointer ${isMe ? 'my-msg' : 'other-msg'}`;
                     
-                    // Reaksiya pəncərəsini açmaq üçün klik hadisəsi
                     div.onclick = (e) => openReactionMenu(e, docSnap.id);
                     
                     let contentHTML = `<p class="break-words">${msg.text}</p>`;
@@ -469,7 +491,6 @@
                         }
                     }
 
-                    // Reaksiyaların vizualı
                     let reactionHTML = "";
                     if(msg.reaction) {
                         reactionHTML = `<span class="absolute -bottom-2 right-2 bg-slate-800 border border-white/10 rounded-full px-1.5 py-0.5 text-xs">${msg.reaction}</span>`;
@@ -486,7 +507,6 @@
             });
         }
 
-        // ❤️ EMOJİ REAKSİYA MENYUSUNU AÇMAQ
         function openReactionMenu(e, msgId) {
             e.stopPropagation();
             selectedMessageIdForReaction = msgId;
