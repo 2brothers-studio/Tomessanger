@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v10.0 Pro</title>
+    <title>Tomessenger Glass v11.0 Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -63,10 +63,6 @@
             .chat-view.active { display: flex !important; }
             .sidebar-view.hidden-mob { display: none !important; }
         }
-
-        .dropdown-menu { display: none; position: absolute; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100; border-radius: 12px; }
-        .dropdown-menu button { width: 100%; text-align: left; padding: 10px 18px; font-size: 13px; transition: background 0.2s; }
-        .dropdown-menu button:hover { background: rgba(255,255,255,0.1); }
         
         .reaction-bar { display: none; position: absolute; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 8px; z-index: 50; gap: 6px; }
     </style>
@@ -108,16 +104,20 @@
                 <div class="flex items-center space-x-3">
                     <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="uploadAvatar(event)">
                     <div id="my-avatar-container" onclick="document.getElementById('avatar-input').click()" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md cursor-pointer overflow-hidden relative group bg-gradient-to-tr from-cyan-500 to-indigo-500">
-                        <img id="my-avatar-img" class="w-full h-full object-cover hidden" src="" alt="">
+                        <img id="my-avatar-img" class="w-full h-full object-cover hidden" src="">
                         <span id="my-avatar-txt">U</span>
+                        <div class="absolute inset-0 bg-black/40 items-center justify-center hidden group-hover:flex text-[9px]">Dəyiş</div>
                     </div>
-                    <span class="font-semibold truncate max-w-[140px] cursor-pointer hover:text-cyan-400" id="my-name" onclick="changeMyName()">Yüklənir...</span>
+                    <span class="font-semibold truncate max-w-[140px] cursor-pointer hover:text-cyan-400" id="my-name" onclick="changeMyName()" title="Adı dəyiş">Yüklənir...</span>
                 </div>
                 <button onclick="logout()" class="text-gray-400 hover:text-red-400"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
             
             <div class="p-3 border-b border-white/5">
-                <input type="text" id="search-input" oninput="filterUsers()" placeholder="Dostlarını axtar..." class="w-full p-2 rounded-xl glass-input text-xs text-white outline-none">
+                <div class="relative">
+                    <input type="text" id="search-input" oninput="filterUsers()" placeholder="Dostlarını axtar..." class="w-full p-2 pl-9 rounded-xl glass-input text-xs text-white outline-none">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-500 text-xs"></i>
+                </div>
             </div>
             
             <div class="flex-1 overflow-y-auto p-2 space-y-1" id="chats-list">
@@ -207,27 +207,31 @@
         let isRecording = false;
         let selectedMessageIdForReaction = null;
 
+        // 🛠️ BUG FIX: Qeydiyyat modunda pəncərələrin düzgün açılıb gizlənməsi
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Qeydiyyat" : "Tomessenger Pro";
             document.getElementById('auth-name').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('auth-phone').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('btn-action').innerText = isSignUpMode ? "Qeydiyyatı Tamamla" : "Giriş Et";
+            document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Hesabınız var?" : "Hesabınız yoxdur?";
+            document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
         }
 
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
             const name = document.getElementById('auth-name').value.trim();
+            const phone = document.getElementById('auth-phone').value.trim();
 
-            if(!email || !password) return alert("Bütün xanaları doldurun!");
+            if(!email || !password) return alert("Xanaları doldurun!");
 
             try {
                 if (isSignUpMode) {
                     if(!name) return alert("Ad yazın!");
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     await setDoc(doc(db, "users", res.user.uid), {
-                        uid: res.user.uid, name: name, email: email, hiddenUsers: [], avatarUrl: "", status: "online", lastSeen: serverTimestamp()
+                        uid: res.user.uid, name: name, email: email, phone: phone || "", hiddenUsers: [], avatarUrl: "", status: "online", lastSeen: serverTimestamp()
                     });
                 } else {
                     const res = await signInWithEmailAndPassword(auth, email, password);
@@ -241,6 +245,34 @@
             signOut(auth);
         }
 
+        window.changeMyName = async function() {
+            const newName = prompt("Yeni adınız:", userData.name);
+            if(newName && newName.trim() !== "") {
+                await updateDoc(doc(db, "users", currentUser.uid), { name: newName.trim() });
+            }
+        }
+
+        // 📸 PROFİL ŞƏKLİ YÜKLƏMƏ FUNKSİYASI (BƏRPA EDİLDİ)
+        window.uploadAvatar = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onloadend = async function() {
+                await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: reader.result });
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function updateAvatarUI(imgId, txtId, url, name) {
+            const imgEl = document.getElementById(imgId);
+            const txtEl = document.getElementById(txtId);
+            if(url) {
+                imgEl.src = url; imgEl.classList.remove('hidden'); txtEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden'); txtEl.innerText = (name || "U").charAt(0).toUpperCase(); txtEl.classList.remove('hidden');
+            }
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -250,6 +282,7 @@
                     if(docSnap.exists()) {
                         userData = { ...userData, ...docSnap.data() };
                         document.getElementById('my-name').innerText = userData.name;
+                        updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
                     }
                 });
 
@@ -262,13 +295,10 @@
             }
         });
 
-        // STATUSU GÖSTƏRMƏK ÜÇÜN FORMAT FUNKSİYASI
         function formatLastSeen(timestamp) {
             if(!timestamp) return "offline";
             const date = timestamp.toDate();
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `Son görülmə: bugun ${hours}:${minutes}`;
+            return `Son görülmə: bugun ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
         }
 
         async function loadUsersAndSync() {
@@ -277,19 +307,32 @@
                 snapshot.forEach(docSnap => { allUsersMap[docSnap.id] = docSnap.data(); });
                 renderSidebarList();
                 
-                // Aktiv çatı və statusu real vaxtda yeniləmək (BUG FIX)
+                // 🛠️ BUG FIX: Aktiv profil şəkli və statusun real vaxtda sinxronizasiyası
                 if(activeChatId && activeChatType === "private" && targetUserData) {
-                    const updatedTarget = allUsersMap[targetUserData.uid];
-                    if(updatedTarget) {
-                        const statusEl = document.getElementById('active-chat-status');
-                        if(updatedTarget.typingTo === currentUser.uid) {
-                            statusEl.innerText = "yazır...";
-                        } else {
-                            statusEl.innerText = updatedTarget.status === "online" ? "Online 🟢" : formatLastSeen(updatedTarget.lastSeen);
-                        }
+                    const u = allUsersMap[targetUserData.uid];
+                    if(u) {
+                        document.getElementById('active-chat-title').innerText = u.name;
+                        document.getElementById('active-chat-status').innerText = u.typingTo === currentUser.uid ? "yazır..." : (u.status === "online" ? "Online 🟢" : formatLastSeen(u.lastSeen));
+                        updateAvatarUI('active-chat-avatar-img', 'active-chat-avatar-txt', u.avatarUrl, u.name);
                     }
                 }
             });
+        }
+
+        // 🔍 AXTARIŞ PANELİ SÜZGƏCİ (BƏRPA EDİLDİ)
+        window.filterUsers = function() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            renderSidebarList();
+        }
+
+        // ❌ İSTİFADƏÇİNİ SİYAHIDAN GİZLƏTMƏK/SİLMƏK (BƏRPA EDİLDİ)
+        window.hideUserFromList = async function(e, targetUid) {
+            e.stopPropagation();
+            if(confirm("Bu şəxsi siyahınızdan silmək istəyirsiniz?")) {
+                if(!userData.hiddenUsers) userData.hiddenUsers = [];
+                userData.hiddenUsers.push(targetUid);
+                await updateDoc(doc(db, "users", currentUser.uid), { hiddenUsers: userData.hiddenUsers });
+            }
         }
 
         function renderSidebarList() {
@@ -298,26 +341,31 @@
 
             Object.values(allUsersMap).forEach(user => {
                 if(user.uid === currentUser.uid) return;
+                // Gizlədilmiş istifadəçiləri süzgəcdən keçirir
+                if(userData.hiddenUsers && userData.hiddenUsers.includes(user.uid)) return;
                 if(searchQuery && !user.name.toLowerCase().includes(searchQuery)) return;
 
                 const isOnline = user.status === "online";
                 const isTyping = user.typingTo === currentUser.uid;
 
                 const div = document.createElement('div');
-                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer relative";
+                div.className = "p-3 flex items-center space-x-3 rounded-xl hover:bg-white/10 cursor-pointer relative group";
                 div.onclick = () => { startPrivateChat(user); };
 
+                const imgPart = user.avatarUrl ? `<img src="${user.avatarUrl}" class="w-full h-full object-cover">` : `<span>${(user.name || "U").charAt(0).toUpperCase()}</span>`;
+
                 div.innerHTML = `
-                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white relative">
-                        <span>${(user.name || "U").charAt(0).toUpperCase()}</span>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-full flex items-center justify-center font-bold text-white relative overflow-hidden">
+                        ${imgPart}
                         <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-slate-900 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-500'}"></span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-sm text-white truncate">${user.name}</h4>
+                        <h4 class="font-semibold text-sm text-white truncate pr-6">${user.name}</h4>
                         <p class="text-xs ${isTyping ? 'text-green-400 font-bold animate-pulse' : 'text-gray-400'} truncate">
-                            ${isTyping ? "yazır..." : (isOnline ? "online" : "çat açmaq üçün toxun")}
+                            ${isTyping ? "yazır..." : (isOnline ? "online" : "offline")}
                         </p>
                     </div>
+                    <button onclick="hideUserFromList(event, '${user.uid}')" class="absolute right-3 top-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-xs"><i class="fas fa-times"></i></button>
                 `;
                 container.appendChild(div);
             });
@@ -325,22 +373,25 @@
 
         window.startPrivateChat = function(targetUser) {
             targetUserData = targetUser; activeChatType = "private";
-            // 🛡️ BUG FIX: Hər iki istifadəçi üçün unikal və gizli otaq ID-si yaradılır
             activeChatId = currentUser.uid < targetUser.uid ? `${currentUser.uid}_${targetUser.uid}` : `${targetUser.uid}_${currentUser.uid}`;
             
             document.getElementById('chat-panel').classList.add('active');
+            document.getElementById('sidebar-panel').classList.add('hidden-mob');
             document.getElementById('no-chat-selected').classList.add('hidden');
             document.getElementById('active-chat-title').innerText = targetUser.name;
             document.getElementById('active-chat-status').innerText = targetUser.status === "online" ? "Online 🟢" : formatLastSeen(targetUser.lastSeen);
+            updateAvatarUI('active-chat-avatar-img', 'active-chat-avatar-txt', targetUser.avatarUrl, targetUser.name);
             listenMessages();
         }
 
         window.startGlobalGroupChat = function() {
             activeChatType = "global"; activeChatId = "global_main_help_room";
             document.getElementById('chat-panel').classList.add('active');
+            document.getElementById('sidebar-panel').classList.add('hidden-mob');
             document.getElementById('no-chat-selected').classList.add('hidden');
             document.getElementById('active-chat-title').innerText = "Ümumdünya Kömək Qrupu";
             document.getElementById('active-chat-status').innerText = "Açıq söhbət";
+            document.getElementById('active-chat-avatar-container').innerHTML = `<i class="fas fa-globe"></i>`;
             listenMessages();
         }
 
@@ -348,7 +399,6 @@
             if(!activeChatId) return;
             if(unsubscribeMessages) unsubscribeMessages();
             
-            // 🛡️ BUG FIX: Mesajlar yalnız cari otaq ID-sinin içindən oxunur!
             const q = query(collection(db, "rooms", activeChatId, "messages"), orderBy("timestamp", "asc"));
             unsubscribeMessages = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('messages-container');
@@ -392,7 +442,6 @@
             closeAllDropdowns();
         }
 
-        // ❌ REAKSİYANI TAM SİLMƏK FUNKSİYASI
         window.removeReaction = async function() {
             if(!selectedMessageIdForReaction) return;
             await updateDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageIdForReaction), { reaction: null });
@@ -441,7 +490,10 @@
             clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { updateDoc(doc(db, "users", currentUser.uid), { typingTo: null }); }, 2000);
         }
 
-        window.backToSidebar = function() { document.getElementById('chat-panel').classList.remove('active'); }
+        window.backToSidebar = function() { 
+            document.getElementById('chat-panel').classList.remove('active'); 
+            document.getElementById('sidebar-panel').classList.remove('hidden-mob');
+        }
         window.closeAllDropdowns = function() { document.getElementById('reaction-popup').style.display = 'none'; }
     </script>
 </body>
