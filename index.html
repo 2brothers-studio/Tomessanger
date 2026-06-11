@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v13.0 Clean</title>
+    <title>Tomessenger Glass v14.0 Live-Check</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -229,7 +229,7 @@
                 }
             } catch (e) { 
                 if (e.code === "auth/email-already-in-use") {
-                    alert("Bu e-poçt artıq işlədilir! Aşağıdakı 'Giriş edin' düyməsinə basıb daxil olun.");
+                    alert("Bu e-poçt ünvanı artıq istifadə olunur!");
                 } else {
                     alert(e.message); 
                 }
@@ -326,7 +326,6 @@
             renderSidebarList();
         }
 
-        // ❌ İstifadəçini siyahıdan silmək/gizlətmək
         window.hideUserFromList = async function(e, targetUid) {
             e.stopPropagation();
             if(confirm("Bu şəxsi siyahınızdan silmək istəyirsiniz?")) {
@@ -408,6 +407,11 @@
                     const msg = docSnap.data();
                     const isMe = msg.senderUid === currentUser.uid;
 
+                    // 🛠️ LIVE CHECK CODES: Əgər mesaj mənə gəlibsə və hələ oxunmayıbsa, onu bazada "oxundu" (isRead: true) edirik
+                    if (!isMe && !msg.isRead && activeChatType === "private") {
+                        updateDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id), { isRead: true });
+                    }
+
                     const div = document.createElement('div');
                     div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm relative ${isMe ? 'my-msg' : 'other-msg'}`;
                     
@@ -419,7 +423,23 @@
                         else contentHTML = `<a href="${msg.fileUrl}" download="${msg.text}" class="text-cyan-400 underline"><i class="fas fa-file-download"></i> ${msg.text}</a>`;
                     }
 
-                    div.innerHTML = `<span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>${contentHTML}`;
+                    // 🛠️ CANLI QUŞ İŞARƏLƏRİ VİZUALI
+                    let checkIcon = "";
+                    if (isMe && activeChatType === "private") {
+                        if (msg.isRead) {
+                            checkIcon = `<span class="text-cyan-400 text-xs ml-1 font-bold" title="Oxundu">✓✓</span>`; // Göy ikiqat quş
+                        } else {
+                            checkIcon = `<span class="text-gray-500 text-xs ml-1" title="Çatdı">✓</span>`; // Boz tək quş
+                        }
+                    }
+
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>
+                            ${checkIcon}
+                        </div>
+                        ${contentHTML}
+                    `;
                     container.appendChild(div);
                 });
                 container.scrollTop = container.scrollHeight;
@@ -450,7 +470,7 @@
 
         async function sendMediaMessage(url, name, type) {
             await addDoc(collection(db, "rooms", activeChatId, "messages"), {
-                text: name, fileUrl: url, fileType: type, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp()
+                text: name, fileUrl: url, fileType: type, senderUid: currentUser.uid, senderName: userData.name, isRead: false, timestamp: serverTimestamp()
             });
         }
 
@@ -458,7 +478,11 @@
             e.preventDefault();
             const input = document.getElementById('msg-input'); const text = input.value.trim();
             if(!text || !activeChatId) return;
-            await addDoc(collection(db, "rooms", activeChatId, "messages"), { text: text, senderUid: currentUser.uid, senderName: userData.name, timestamp: serverTimestamp() });
+            
+            // Mesaj bazaya ilk gedəndə isRead: false olaraq qeyd edilir
+            await addDoc(collection(db, "rooms", activeChatId, "messages"), { 
+                text: text, senderUid: currentUser.uid, senderName: userData.name, isRead: false, timestamp: serverTimestamp() 
+            });
             updateDoc(doc(db, "users", currentUser.uid), { typingTo: null }); input.value = "";
         }
 
