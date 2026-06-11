@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v14.0 Live-Check</title>
+    <title>Tomessenger Glass v14.1 Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -51,6 +51,7 @@
         .my-msg { 
             background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(79, 70, 229, 0.25));
             border: 1px solid rgba(255, 255, 255, 0.15); align-self: flex-end; border-radius: 16px 16px 0px 16px; 
+            padding-bottom: 20px; /* Altdakı quş işarəsi üçün yer */
         }
         .other-msg { 
             background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.05);
@@ -407,7 +408,6 @@
                     const msg = docSnap.data();
                     const isMe = msg.senderUid === currentUser.uid;
 
-                    // 🛠️ LIVE CHECK CODES: Əgər mesaj mənə gəlibsə və hələ oxunmayıbsa, onu bazada "oxundu" (isRead: true) edirik
                     if (!isMe && !msg.isRead && activeChatType === "private") {
                         updateDoc(doc(db, "rooms", activeChatId, "messages", docSnap.id), { isRead: true });
                     }
@@ -423,22 +423,20 @@
                         else contentHTML = `<a href="${msg.fileUrl}" download="${msg.text}" class="text-cyan-400 underline"><i class="fas fa-file-download"></i> ${msg.text}</a>`;
                     }
 
-                    // 🛠️ CANLI QUŞ İŞARƏLƏRİ VİZUALI
+                    // 🛠️ QUŞ İŞARƏLƏRİNİ SAĞ AŞAĞI KÜNCƏ SABİTLƏDİK
                     let checkIcon = "";
                     if (isMe && activeChatType === "private") {
                         if (msg.isRead) {
-                            checkIcon = `<span class="text-cyan-400 text-xs ml-1 font-bold" title="Oxundu">✓✓</span>`; // Göy ikiqat quş
+                            checkIcon = `<span class="absolute bottom-1 right-2 text-cyan-400 text-xs font-bold" title="Oxundu">✓✓</span>`; // Göy ikiqat quş
                         } else {
-                            checkIcon = `<span class="text-gray-500 text-xs ml-1" title="Çatdı">✓</span>`; // Boz tək quş
+                            checkIcon = `<span class="absolute bottom-1 right-2 text-gray-400 text-xs" title="Çatdı">✓</span>`; // Boz tək quş
                         }
                     }
 
                     div.innerHTML = `
-                        <div class="flex justify-between items-start gap-2">
-                            <span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>
-                            ${checkIcon}
-                        </div>
+                        <span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>
                         ${contentHTML}
+                        ${checkIcon}
                     `;
                     container.appendChild(div);
                 });
@@ -479,7 +477,6 @@
             const input = document.getElementById('msg-input'); const text = input.value.trim();
             if(!text || !activeChatId) return;
             
-            // Mesaj bazaya ilk gedəndə isRead: false olaraq qeyd edilir
             await addDoc(collection(db, "rooms", activeChatId, "messages"), { 
                 text: text, senderUid: currentUser.uid, senderName: userData.name, isRead: false, timestamp: serverTimestamp() 
             });
