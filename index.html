@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v11.0 Ultimate</title>
+    <title>Tomessenger Glass v12.0 Ironclad</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -108,7 +108,7 @@
                         <span id="my-avatar-txt">U</span>
                         <div class="absolute inset-0 bg-black/40 items-center justify-center hidden group-hover:flex text-[9px]">Dəyiş</div>
                     </div>
-                    <span class="font-semibold truncate max-w-[140px] cursor-pointer hover:text-cyan-400" id="my-name" onclick="changeMyName()" title="Adı dəyiş">Yüklənir...</span>
+                    <span class="font-semibold truncate max-w-[140px] cursor-pointer hover:text-cyan-400" id="my-name" onclick="changeMyName()">Yüklənir...</span>
                 </div>
                 <button onclick="logout()" class="text-gray-400 hover:text-red-400"><i class="fas fa-sign-out-alt text-lg"></i></button>
             </div>
@@ -207,7 +207,6 @@
         let isRecording = false;
         let selectedMessageIdForReaction = null;
 
-        // 🛠️ BUG FIX: Qeydiyyat modunda pəncərələrin düzgün açılıb gizlənməsi
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Qeydiyyat" : "Tomessenger Pro";
@@ -218,6 +217,7 @@
             document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
         }
 
+        // 🛡️ KRİTİK ULTIMATE FORCE-LOGIN AYARI (BÜTÜN BUGLAR TƏMİZLƏNDİ)
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
@@ -230,19 +230,49 @@
                 if (isSignUpMode) {
                     if(!name) return alert("Ad yazın!");
                     const res = await createUserWithEmailAndPassword(auth, email, password);
+                    
+                    // Məlumatları Firestore-a yazırıq
                     await setDoc(doc(db, "users", res.user.uid), {
                         uid: res.user.uid, name: name, email: email, phone: phone || "", hiddenUsers: [], avatarUrl: "", status: "online", lastSeen: serverTimestamp()
                     });
+                    
+                    // 🚀 FORCE ROUTE: Qeydiyyat bitən kimi gözləmədən birbaşa tətbiqi işə salırıq
+                    setupAppWithUser(res.user);
                 } else {
                     const res = await signInWithEmailAndPassword(auth, email, password);
                     await updateDoc(doc(db, "users", res.user.uid), { status: "online", lastSeen: serverTimestamp() });
+                    setupAppWithUser(res.user);
                 }
-            } catch (e) { alert(e.message); }
+            } catch (e) { 
+                if (e.code === "auth/email-already-in-use") {
+                    alert("Bu e-poçt artıq qeydiyyatdan keçib! Zəhmət olmasa aşağıdan 'Giriş edin' düyməsinə basaraq daxil olun.");
+                } else {
+                    alert(e.message); 
+                }
+            }
+        }
+
+        // Proqramın pəncərəsini məcburi açan və dataları sinxronlaşdıran ana funksiya
+        function setupAppWithUser(user) {
+            currentUser = user;
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            
+            // İstifadəçinin öz profil məlumatlarını dinləmək
+            onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+                if(docSnap.exists()) {
+                    userData = { ...userData, ...docSnap.data() };
+                    document.getElementById('my-name').innerText = userData.name;
+                    updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
+                }
+            });
+            loadUsersAndSync();
         }
 
         window.logout = async () => {
             if(currentUser) await updateDoc(doc(db, "users", currentUser.uid), { status: "offline", lastSeen: serverTimestamp() });
             signOut(auth);
+            location.reload(); // təmiz çıxış üçün səhifəni sıfırlayır
         }
 
         window.changeMyName = async function() {
@@ -252,7 +282,6 @@
             }
         }
 
-        // 📸 PROFİL ŞƏKLİ YÜKLƏMƏ FUNKSİYASI (BƏRPA EDİLDİ)
         window.uploadAvatar = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -273,22 +302,11 @@
             }
         }
 
+        // Brauzer açılanda əgər session aktivdirsə avtomatik içəri atır
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentUser = user;
                 await updateDoc(doc(db, "users", user.uid), { status: "online", lastSeen: serverTimestamp() });
-                
-                onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-                    if(docSnap.exists()) {
-                        userData = { ...userData, ...docSnap.data() };
-                        document.getElementById('my-name').innerText = userData.name;
-                        updateAvatarUI('my-avatar-img', 'my-avatar-txt', userData.avatarUrl, userData.name);
-                    }
-                });
-
-                document.getElementById('auth-container').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
-                loadUsersAndSync();
+                setupAppWithUser(user);
             } else {
                 document.getElementById('auth-container').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
@@ -297,8 +315,12 @@
 
         function formatLastSeen(timestamp) {
             if(!timestamp) return "offline";
-            const date = timestamp.toDate();
-            return `Son görülmə: bugun ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+            try {
+                const date = timestamp.toDate();
+                return `Son görülmə: bugun ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+            } catch(e) {
+                return "offline";
+            }
         }
 
         async function loadUsersAndSync() {
@@ -307,7 +329,6 @@
                 snapshot.forEach(docSnap => { allUsersMap[docSnap.id] = docSnap.data(); });
                 renderSidebarList();
                 
-                // 🛠️ BUG FIX: Aktiv profil şəkli və statusun real vaxtda sinxronizasiyası
                 if(activeChatId && activeChatType === "private" && targetUserData) {
                     const u = allUsersMap[targetUserData.uid];
                     if(u) {
@@ -319,13 +340,11 @@
             });
         }
 
-        // 🔍 AXTARIŞ PANELİ SÜZGƏCİ (BƏRPA EDİLDİ)
         window.filterUsers = function() {
             searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
             renderSidebarList();
         }
 
-        // ❌ İSTİFADƏÇİNİ SİYAHIDAN GİZLƏTMƏK/SİLMƏK (BƏRPA EDİLDİ)
         window.hideUserFromList = async function(e, targetUid) {
             e.stopPropagation();
             if(confirm("Bu şəxsi siyahınızdan silmək istəyirsiniz?")) {
@@ -341,7 +360,6 @@
 
             Object.values(allUsersMap).forEach(user => {
                 if(user.uid === currentUser.uid) return;
-                // Gizlədilmiş istifadəçiləri süzgəcdən keçirir
                 if(userData.hiddenUsers && userData.hiddenUsers.includes(user.uid)) return;
                 if(searchQuery && !user.name.toLowerCase().includes(searchQuery)) return;
 
