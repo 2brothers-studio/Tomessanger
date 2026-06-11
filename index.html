@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tomessenger Glass v12.0 Ironclad</title>
+    <title>Tomessenger Glass v13.0 Clean</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -63,22 +63,12 @@
             .chat-view.active { display: flex !important; }
             .sidebar-view.hidden-mob { display: none !important; }
         }
-        
-        .reaction-bar { display: none; position: absolute; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 8px; z-index: 50; gap: 6px; }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center relative overflow-hidden" onclick="closeAllDropdowns()">
+<body class="h-screen flex items-center justify-center relative overflow-hidden">
 
     <div class="liquid-bg"></div>
     <div class="liquid-bg-2"></div>
-
-    <div id="reaction-popup" class="reaction-bar flex shadow-2xl">
-        <button onclick="sendReaction('👍')" class="hover:scale-130 transition-transform text-lg">👍</button>
-        <button onclick="sendReaction('❤️')" class="hover:scale-130 transition-transform text-lg">❤️</button>
-        <button onclick="sendReaction('😂')" class="hover:scale-130 transition-transform text-lg">😂</button>
-        <button onclick="sendReaction('😮')" class="hover:scale-130 transition-transform text-lg">😮</button>
-        <button onclick="removeReaction()" class="hover:scale-130 transition-transform text-xs text-red-400 font-bold border-l border-white/20 pl-2 ml-1">Sil ❌</button>
-    </div>
 
     <div id="auth-container" class="w-full max-w-md p-8 rounded-2xl glass-panel z-10">
         <h2 id="auth-title" class="text-3xl font-extrabold text-center mb-6 bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Tomessenger Pro</h2>
@@ -205,7 +195,6 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
-        let selectedMessageIdForReaction = null;
 
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
@@ -217,7 +206,6 @@
             document.getElementById('btn-switch').innerText = isSignUpMode ? "Giriş edin" : "Qeydiyyatdan keçin";
         }
 
-        // 🛡️ KRİTİK ULTIMATE FORCE-LOGIN AYARI (BÜTÜN BUGLAR TƏMİZLƏNDİ)
         window.handleAuth = async function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
@@ -230,13 +218,9 @@
                 if (isSignUpMode) {
                     if(!name) return alert("Ad yazın!");
                     const res = await createUserWithEmailAndPassword(auth, email, password);
-                    
-                    // Məlumatları Firestore-a yazırıq
                     await setDoc(doc(db, "users", res.user.uid), {
                         uid: res.user.uid, name: name, email: email, phone: phone || "", hiddenUsers: [], avatarUrl: "", status: "online", lastSeen: serverTimestamp()
                     });
-                    
-                    // 🚀 FORCE ROUTE: Qeydiyyat bitən kimi gözləmədən birbaşa tətbiqi işə salırıq
                     setupAppWithUser(res.user);
                 } else {
                     const res = await signInWithEmailAndPassword(auth, email, password);
@@ -245,20 +229,18 @@
                 }
             } catch (e) { 
                 if (e.code === "auth/email-already-in-use") {
-                    alert("Bu e-poçt artıq qeydiyyatdan keçib! Zəhmət olmasa aşağıdan 'Giriş edin' düyməsinə basaraq daxil olun.");
+                    alert("Bu e-poçt artıq işlədilir! Aşağıdakı 'Giriş edin' düyməsinə basıb daxil olun.");
                 } else {
                     alert(e.message); 
                 }
             }
         }
 
-        // Proqramın pəncərəsini məcburi açan və dataları sinxronlaşdıran ana funksiya
         function setupAppWithUser(user) {
             currentUser = user;
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
             
-            // İstifadəçinin öz profil məlumatlarını dinləmək
             onSnapshot(doc(db, "users", user.uid), (docSnap) => {
                 if(docSnap.exists()) {
                     userData = { ...userData, ...docSnap.data() };
@@ -272,7 +254,7 @@
         window.logout = async () => {
             if(currentUser) await updateDoc(doc(db, "users", currentUser.uid), { status: "offline", lastSeen: serverTimestamp() });
             signOut(auth);
-            location.reload(); // təmiz çıxış üçün səhifəni sıfırlayır
+            location.reload();
         }
 
         window.changeMyName = async function() {
@@ -302,7 +284,6 @@
             }
         }
 
-        // Brauzer açılanda əgər session aktivdirsə avtomatik içəri atır
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 await updateDoc(doc(db, "users", user.uid), { status: "online", lastSeen: serverTimestamp() });
@@ -345,6 +326,7 @@
             renderSidebarList();
         }
 
+        // ❌ İstifadəçini siyahıdan silmək/gizlətmək
         window.hideUserFromList = async function(e, targetUid) {
             e.stopPropagation();
             if(confirm("Bu şəxsi siyahınızdan silmək istəyirsiniz?")) {
@@ -427,8 +409,7 @@
                     const isMe = msg.senderUid === currentUser.uid;
 
                     const div = document.createElement('div');
-                    div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm relative cursor-pointer ${isMe ? 'my-msg' : 'other-msg'}`;
-                    div.onclick = (e) => openReactionMenu(e, docSnap.id);
+                    div.className = `max-w-xs md:max-w-md p-3 shadow-lg text-sm relative ${isMe ? 'my-msg' : 'other-msg'}`;
                     
                     let contentHTML = `<p class="break-words">${msg.text}</p>`;
                     if(msg.fileUrl) {
@@ -438,32 +419,11 @@
                         else contentHTML = `<a href="${msg.fileUrl}" download="${msg.text}" class="text-cyan-400 underline"><i class="fas fa-file-download"></i> ${msg.text}</a>`;
                     }
 
-                    let reactionHTML = msg.reaction ? `<span class="absolute -bottom-2 right-2 bg-slate-800 border border-white/10 rounded-full px-1.5 py-0.5 text-xs">${msg.reaction}</span>` : "";
-
-                    div.innerHTML = `<span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>${contentHTML}${reactionHTML}`;
+                    div.innerHTML = `<span class="text-[10px] text-cyan-400 font-bold block mb-1">${isMe ? "Sən" : msg.senderName}</span>${contentHTML}`;
                     container.appendChild(div);
                 });
                 container.scrollTop = container.scrollHeight;
             });
-        }
-
-        window.openReactionMenu = function(e, msgId) {
-            e.stopPropagation();
-            selectedMessageIdForReaction = msgId;
-            const popup = document.getElementById('reaction-popup');
-            popup.style.display = 'flex'; popup.style.left = e.pageX + 'px'; popup.style.top = (e.pageY - 40) + 'px';
-        }
-
-        window.sendReaction = async function(emoji) {
-            if(!selectedMessageIdForReaction) return;
-            await updateDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageIdForReaction), { reaction: emoji });
-            closeAllDropdowns();
-        }
-
-        window.removeReaction = async function() {
-            if(!selectedMessageIdForReaction) return;
-            await updateDoc(doc(db, "rooms", activeChatId, "messages", selectedMessageIdForReaction), { reaction: null });
-            closeAllDropdowns();
         }
 
         window.toggleVoiceRecord = async function() {
@@ -512,7 +472,6 @@
             document.getElementById('chat-panel').classList.remove('active'); 
             document.getElementById('sidebar-panel').classList.remove('hidden-mob');
         }
-        window.closeAllDropdowns = function() { document.getElementById('reaction-popup').style.display = 'none'; }
     </script>
 </body>
 </html>
